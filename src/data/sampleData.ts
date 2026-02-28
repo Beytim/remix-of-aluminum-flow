@@ -1,80 +1,102 @@
 // ══════════════════════════════════════════
-// SAMPLE DATA FOR ALUMINUM BUSINESS MANAGEMENT
+// ALUMINUM WINDOW & DOOR MANUFACTURING ERP
+// TYPES & SAMPLE DATA
 // ══════════════════════════════════════════
 
-export type AlloyType = '6061' | '6063' | '7075' | '2024' | '5052' | '5083' | '6060' | '6082' | 'Other';
-export type Temper = 'T6' | 'T5' | 'T4' | 'T651' | 'O' | 'H14' | 'H32' | 'Other';
-export type ProductForm = 'Sheet' | 'Plate' | 'Bar/Rod' | 'Tube/Pipe' | 'Angle' | 'Channel' | 'Beam' | 'Profile' | 'Coil' | 'Custom';
-export type OrderStatus = 'Draft' | 'Quote Accepted' | 'Payment Received' | 'Processing' | 'Ready' | 'Shipped' | 'Delivered' | 'Completed' | 'Cancelled';
-export type QuoteStatus = 'Draft' | 'Sent' | 'Accepted' | 'Rejected' | 'Expired';
-export type POStatus = 'Draft' | 'Sent' | 'Confirmed' | 'Shipped' | 'Received' | 'Partially Received' | 'Cancelled';
-export type CustomerType = 'Retail' | 'Wholesale' | 'Fabricator' | 'Contractor' | 'Distributor';
+// ═══ TYPES ═══
 
 export interface Product {
   id: string;
+  code: string;
   name: string;
-  alloy: AlloyType;
-  temper: Temper;
-  form: ProductForm;
-  length?: number;
-  width?: number;
-  thickness?: number;
-  diameter?: number;
-  wallThickness?: number;
-  weightPerMeter: number;
-  quantity: number;
-  minStock: number;
-  maxStock: number;
-  location: string;
-  supplierId: string;
-  purchasePrice: number;
+  nameAm: string;
+  category: 'Windows' | 'Doors' | 'Curtain Walls' | 'Handrails' | 'Louvers' | 'Partitions';
+  subcategory: string;
+  profile: string;
+  glass: string;
+  colors: string[];
+  laborHrs: number;
+  materialCost: number;
   sellingPrice: number;
-  batchNumber: string;
-  millCert: boolean;
-  dateReceived: string;
-  notes: string;
-  unit: 'kg' | 'lb' | 'piece';
+  status: 'Active' | 'Inactive';
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  nameAm: string;
+  customerId: string;
+  customerName: string;
+  type: 'Residential' | 'Commercial';
+  status: 'Quote' | 'Deposit' | 'Materials Ordered' | 'Production' | 'Ready' | 'Installation' | 'Completed';
+  value: number;
+  deposit: number;
+  balance: number;
+  progress: number;
+  orderDate: string;
+  dueDate: string;
+}
+
+export interface WorkOrder {
+  id: string;
+  projectId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  completed: number;
+  assignee: string;
+  priority: 'High' | 'Medium' | 'Low';
+  stage: 'Cutting' | 'Machining' | 'Assembly' | 'Welding' | 'Glazing' | 'Quality Check' | 'Packaging';
+  progress: number;
+  startDate: string;
+  dueDate: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  code: string;
+  name: string;
+  nameAm: string;
+  category: 'Profile' | 'Glass' | 'Hardware' | 'Accessory' | 'Steel';
+  unit: string;
+  stock: number;
+  minStock: number;
+  reserved: number;
+  available: number;
+  location: string;
+  cost: number;
 }
 
 export interface Customer {
   id: string;
-  company: string;
+  name: string;
+  nameAm: string;
   contact: string;
+  type: 'Individual' | 'Company' | 'Contractor' | 'Developer';
   phone: string;
   email: string;
-  billingAddress: string;
-  shippingAddress: string;
-  taxId: string;
-  paymentTerms: string;
-  creditLimit: number;
-  customerType: CustomerType;
-  status: 'Active' | 'Inactive';
-  totalOrders: number;
-  totalSpent: number;
-}
-
-export interface Order {
-  id: string;
-  customerId: string;
-  customerName: string;
-  date: string;
-  deliveryDate: string;
-  status: OrderStatus;
-  paymentStatus: 'Paid' | 'Partial' | 'Unpaid';
-  total: number;
-  items: number;
+  address: string;
+  projects: number;
+  totalValue: number;
+  outstanding: number;
 }
 
 export interface Quote {
   id: string;
   customerId: string;
   customerName: string;
-  date: string;
-  validUntil: string;
-  status: QuoteStatus;
-  total: number;
+  projectName: string;
   items: number;
-  margin: number;
+  materialCost: number;
+  laborCost: number;
+  installCost: number;
+  transportCost: number;
+  subtotal: number;
+  vat: number;
+  total: number;
+  status: 'Pending' | 'Accepted' | 'Rejected';
+  date: string;
+  validity: string;
 }
 
 export interface Supplier {
@@ -83,129 +105,274 @@ export interface Supplier {
   contact: string;
   phone: string;
   email: string;
+  country: string;
   leadTime: number;
   rating: number;
   preferred: boolean;
   paymentTerms: string;
+  certifications: string[];
 }
 
-export interface CuttingJob {
+export interface Invoice {
   id: string;
-  orderId: string;
-  product: string;
-  originalLength: number;
-  cuts: number;
-  waste: number;
-  assignedTo: string;
-  status: 'Pending' | 'In Progress' | 'Completed';
+  projectId: string;
+  customerName: string;
+  amount: number;
+  paid: number;
+  balance: number;
+  status: 'Paid' | 'Partial' | 'Overdue';
+  dueDate: string;
+}
+
+export interface Payment {
+  id: string;
+  invoiceId: string;
   date: string;
+  customerName: string;
+  amount: number;
+  method: 'Bank Transfer' | 'TeleBirr' | 'Cash' | 'Cheque';
+  reference: string;
+}
+
+export interface Employee {
+  id: string;
+  name: string;
+  nameAm: string;
+  position: string;
+  department: string;
+  email: string;
+  phone: string;
+  hireDate: string;
+  status: 'active' | 'on-leave';
+  salary: number;
+  performance: number;
+}
+
+export interface Installation {
+  id: string;
+  projectId: string;
+  projectName: string;
+  customerName: string;
+  address: string;
+  scheduledDate: string;
+  team: string;
+  status: 'Scheduled' | 'In Progress' | 'Completed';
+  notes: string;
+  notesAm: string;
+}
+
+export interface MaintenanceTask {
+  id: string;
+  machineId: string;
+  machineName: string;
+  type: 'Preventive' | 'Corrective' | 'Predictive';
+  scheduledDate: string;
+  status: 'Scheduled' | 'In Progress' | 'Completed' | 'Overdue';
+  assignee: string;
+  notes: string;
+}
+
+export interface QualityCheck {
+  id: string;
+  workOrderId: string;
+  productName: string;
+  inspector: string;
+  date: string;
+  result: 'Pass' | 'Fail' | 'Conditional';
+  defects: string[];
+  notes: string;
 }
 
 export interface Activity {
   id: string;
-  type: 'order' | 'stock' | 'alert' | 'quote';
+  type: 'order' | 'stock' | 'alert' | 'quote' | 'production' | 'install';
   message: string;
+  messageAm: string;
   time: string;
 }
 
-// ═══ PRODUCTS ═══
+// ═══ SAMPLE PRODUCTS ═══
 export const sampleProducts: Product[] = [
-  { id: 'ALU-001', name: '6061-T6 Sheet 4x8', alloy: '6061', temper: 'T6', form: 'Sheet', length: 2438, width: 1219, thickness: 3.175, weightPerMeter: 8.6, quantity: 45, minStock: 10, maxStock: 100, location: 'A-01-1', supplierId: 'SUP-001', purchasePrice: 4.50, sellingPrice: 6.75, batchNumber: 'B2024-0891', millCert: true, dateReceived: '2024-12-15', notes: 'Standard stock item', unit: 'kg' },
-  { id: 'ALU-002', name: '6063-T5 Profile Extrusion', alloy: '6063', temper: 'T5', form: 'Profile', length: 6000, thickness: 2, weightPerMeter: 1.2, quantity: 120, minStock: 20, maxStock: 200, location: 'B-03-2', supplierId: 'SUP-002', purchasePrice: 3.80, sellingPrice: 5.70, batchNumber: 'B2024-1102', millCert: true, dateReceived: '2025-01-08', notes: 'Window frame profile', unit: 'kg' },
-  { id: 'ALU-003', name: '7075-T651 Plate 1"', alloy: '7075', temper: 'T651', form: 'Plate', length: 2438, width: 1219, thickness: 25.4, weightPerMeter: 68.5, quantity: 8, minStock: 5, maxStock: 30, location: 'A-05-1', supplierId: 'SUP-001', purchasePrice: 12.00, sellingPrice: 18.50, batchNumber: 'B2024-0772', millCert: true, dateReceived: '2024-11-20', notes: 'Aerospace grade', unit: 'kg' },
-  { id: 'ALU-004', name: '6061-T6 Round Bar 2"', alloy: '6061', temper: 'T6', form: 'Bar/Rod', length: 3000, diameter: 50.8, weightPerMeter: 5.5, quantity: 32, minStock: 10, maxStock: 60, location: 'C-02-3', supplierId: 'SUP-003', purchasePrice: 5.20, sellingPrice: 7.80, batchNumber: 'B2025-0012', millCert: true, dateReceived: '2025-01-15', notes: '', unit: 'kg' },
-  { id: 'ALU-005', name: '5052-H32 Sheet 0.063"', alloy: '5052', temper: 'H32', form: 'Sheet', length: 2438, width: 1219, thickness: 1.6, weightPerMeter: 4.3, quantity: 3, minStock: 15, maxStock: 80, location: 'A-02-2', supplierId: 'SUP-002', purchasePrice: 3.90, sellingPrice: 5.85, batchNumber: 'B2024-0955', millCert: false, dateReceived: '2024-12-01', notes: 'Marine grade - LOW STOCK', unit: 'kg' },
-  { id: 'ALU-006', name: '6063-T6 Square Tube 2x2', alloy: '6063', temper: 'T6', form: 'Tube/Pipe', length: 6000, thickness: 3.175, wallThickness: 3.175, weightPerMeter: 1.8, quantity: 65, minStock: 15, maxStock: 120, location: 'B-01-1', supplierId: 'SUP-002', purchasePrice: 4.10, sellingPrice: 6.15, batchNumber: 'B2025-0045', millCert: true, dateReceived: '2025-01-22', notes: '', unit: 'kg' },
-  { id: 'ALU-007', name: '6061-T6 Angle 2x2x1/4', alloy: '6061', temper: 'T6', form: 'Angle', length: 6000, width: 50.8, thickness: 6.35, weightPerMeter: 1.5, quantity: 48, minStock: 10, maxStock: 80, location: 'C-01-2', supplierId: 'SUP-001', purchasePrice: 3.60, sellingPrice: 5.40, batchNumber: 'B2024-1200', millCert: true, dateReceived: '2025-01-05', notes: '', unit: 'kg' },
-  { id: 'ALU-008', name: '2024-T4 Sheet 0.125"', alloy: '2024', temper: 'T4', form: 'Sheet', length: 2438, width: 1219, thickness: 3.175, weightPerMeter: 8.8, quantity: 2, minStock: 8, maxStock: 40, location: 'A-04-1', supplierId: 'SUP-003', purchasePrice: 9.50, sellingPrice: 14.25, batchNumber: 'B2024-0680', millCert: true, dateReceived: '2024-10-15', notes: 'Aerospace - CRITICAL LOW', unit: 'kg' },
-  { id: 'ALU-009', name: '5083-H14 Plate 1/2"', alloy: '5083', temper: 'H14', form: 'Plate', length: 2438, width: 1219, thickness: 12.7, weightPerMeter: 34.3, quantity: 15, minStock: 5, maxStock: 25, location: 'A-06-1', supplierId: 'SUP-001', purchasePrice: 7.80, sellingPrice: 11.70, batchNumber: 'B2025-0088', millCert: true, dateReceived: '2025-02-01', notes: 'Marine & structural', unit: 'kg' },
-  { id: 'ALU-010', name: '6082-T6 Channel 3"', alloy: '6082', temper: 'T6', form: 'Channel', length: 6000, width: 76.2, thickness: 6.35, weightPerMeter: 2.8, quantity: 22, minStock: 8, maxStock: 50, location: 'C-03-1', supplierId: 'SUP-002', purchasePrice: 5.00, sellingPrice: 7.50, batchNumber: 'B2025-0110', millCert: false, dateReceived: '2025-02-10', notes: '', unit: 'kg' },
+  { id: 'PRD-001', code: 'SW-6063-S1', name: 'Sliding Window 2-Panel', nameAm: 'ተንሸራታች መስኮት 2-ፓነል', category: 'Windows', subcategory: 'Sliding', profile: '6063-T5', glass: '6mm Clear Tempered', colors: ['White', 'Bronze', 'Black'], laborHrs: 3.5, materialCost: 4500, sellingPrice: 7200, status: 'Active' },
+  { id: 'PRD-002', code: 'CW-6063-S2', name: 'Casement Window Single', nameAm: 'ካዝመንት መስኮት ነጠላ', category: 'Windows', subcategory: 'Casement', profile: '6063-T5', glass: '5mm Clear Float', colors: ['White', 'Silver'], laborHrs: 2.5, materialCost: 3200, sellingPrice: 5100, status: 'Active' },
+  { id: 'PRD-003', code: 'FW-6063-S3', name: 'Fixed Window Large', nameAm: 'ቋሚ መስኮት ትልቅ', category: 'Windows', subcategory: 'Fixed', profile: '6063-T5', glass: '8mm Tinted Tempered', colors: ['White', 'Bronze', 'Grey'], laborHrs: 2.0, materialCost: 3800, sellingPrice: 6000, status: 'Active' },
+  { id: 'PRD-004', code: 'SD-6063-D1', name: 'Sliding Door 3-Panel', nameAm: 'ተንሸራታች በር 3-ፓነል', category: 'Doors', subcategory: 'Sliding', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['White', 'Black', 'Bronze'], laborHrs: 6.0, materialCost: 12000, sellingPrice: 19500, status: 'Active' },
+  { id: 'PRD-005', code: 'HD-6063-D2', name: 'Hinged Door Double', nameAm: 'የሚከፈት በር ድርብ', category: 'Doors', subcategory: 'Hinged', profile: '6063-T6', glass: '8mm Frosted Tempered', colors: ['White', 'Bronze'], laborHrs: 5.0, materialCost: 9500, sellingPrice: 15200, status: 'Active' },
+  { id: 'PRD-006', code: 'FD-6063-D3', name: 'Folding Door 4-Panel', nameAm: 'ተጣጣፊ በር 4-ፓነል', category: 'Doors', subcategory: 'Folding', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['Black', 'Grey'], laborHrs: 8.0, materialCost: 18000, sellingPrice: 29000, status: 'Active' },
+  { id: 'PRD-007', code: 'CW-6060-C1', name: 'Curtain Wall System', nameAm: 'ከርተን ወል ሲስተም', category: 'Curtain Walls', subcategory: 'Stick System', profile: '6060-T5', glass: '12mm DGU', colors: ['Silver'], laborHrs: 12.0, materialCost: 35000, sellingPrice: 55000, status: 'Active' },
+  { id: 'PRD-008', code: 'HR-6063-H1', name: 'Glass Handrail System', nameAm: 'የመስታወት ዘንግ ስርዓት', category: 'Handrails', subcategory: 'Glass', profile: '6063-T6', glass: '12mm Clear Tempered', colors: ['Silver', 'Black'], laborHrs: 4.0, materialCost: 8500, sellingPrice: 13500, status: 'Active' },
+  { id: 'PRD-009', code: 'LV-6063-L1', name: 'Aluminum Louver Window', nameAm: 'አልሚኒየም ላውቨር መስኮት', category: 'Louvers', subcategory: 'Adjustable', profile: '6063-T5', glass: '5mm Frosted', colors: ['White', 'Silver'], laborHrs: 3.0, materialCost: 3500, sellingPrice: 5600, status: 'Active' },
+  { id: 'PRD-010', code: 'PT-6063-P1', name: 'Office Partition System', nameAm: 'የቢሮ ክፋፍል ስርዓት', category: 'Partitions', subcategory: 'Full Height', profile: '6063-T5', glass: '10mm Clear Tempered', colors: ['Silver', 'White'], laborHrs: 5.0, materialCost: 7200, sellingPrice: 11500, status: 'Active' },
 ];
 
-// ═══ CUSTOMERS ═══
+// ═══ SAMPLE PROJECTS ═══
+export const sampleProjects: Project[] = [
+  { id: 'PJ-001', name: 'Bole Apartments Tower A', nameAm: 'ቦሌ አፓርትመንት ታወር ሀ', customerId: 'CUS-001', customerName: 'Ayat Real Estate', type: 'Commercial', status: 'Production', value: 850000, deposit: 425000, balance: 425000, progress: 45, orderDate: '2025-01-15', dueDate: '2025-04-30' },
+  { id: 'PJ-002', name: 'Villa Sunshine Residence', nameAm: 'ቪላ ሳንሻይን መኖሪያ', customerId: 'CUS-002', customerName: 'Ato Kebede Alemu', type: 'Residential', status: 'Materials Ordered', value: 285000, deposit: 142500, balance: 142500, progress: 25, orderDate: '2025-02-01', dueDate: '2025-05-15' },
+  { id: 'PJ-003', name: 'Megenagna Office Complex', nameAm: 'መገናኛ ቢሮ ኮምፕሌክስ', customerId: 'CUS-003', customerName: 'Ethio Engineering', type: 'Commercial', status: 'Installation', value: 1200000, deposit: 900000, balance: 300000, progress: 85, orderDate: '2024-11-01', dueDate: '2025-03-15' },
+  { id: 'PJ-004', name: 'Sarbet Hotel Renovation', nameAm: 'ሳርቤት ሆቴል ማደስ', customerId: 'CUS-004', customerName: 'Getahun Hotels PLC', type: 'Commercial', status: 'Quote', value: 450000, deposit: 0, balance: 450000, progress: 5, orderDate: '2025-02-20', dueDate: '2025-06-30' },
+  { id: 'PJ-005', name: 'CMC Residential Block', nameAm: 'ሲኤምሲ መኖሪያ ብሎክ', customerId: 'CUS-005', customerName: 'Noah Construction', type: 'Residential', status: 'Ready', value: 520000, deposit: 390000, balance: 130000, progress: 95, orderDate: '2024-12-10', dueDate: '2025-03-01' },
+  { id: 'PJ-006', name: 'Kazanchis Bank Branch', nameAm: 'ካዛንቺስ ባንክ ቅርንጫፍ', customerId: 'CUS-006', customerName: 'Commercial Bank Ethiopia', type: 'Commercial', status: 'Deposit', value: 380000, deposit: 190000, balance: 190000, progress: 15, orderDate: '2025-02-10', dueDate: '2025-05-20' },
+  { id: 'PJ-007', name: 'Addis View Penthouse', nameAm: 'አዲስ ቪው ፔንትሃውስ', customerId: 'CUS-007', customerName: 'W/ro Tigist Haile', type: 'Residential', status: 'Completed', value: 195000, deposit: 195000, balance: 0, progress: 100, orderDate: '2024-09-15', dueDate: '2025-01-15' },
+];
+
+// ═══ SAMPLE INVENTORY ═══
+export const sampleInventory: InventoryItem[] = [
+  { id: 'INV-001', code: 'PF-6063-01', name: 'Window Frame Profile 6063', nameAm: 'የመስኮት ፍሬም ፕሮፋይል 6063', category: 'Profile', unit: 'meter', stock: 450, minStock: 100, reserved: 120, available: 330, location: 'R1-A1', cost: 85 },
+  { id: 'INV-002', code: 'PF-6063-02', name: 'Door Frame Profile 6063', nameAm: 'የበር ፍሬም ፕሮፋይል 6063', category: 'Profile', unit: 'meter', stock: 280, minStock: 80, reserved: 90, available: 190, location: 'R1-A2', cost: 120 },
+  { id: 'INV-003', code: 'PF-6060-01', name: 'Curtain Wall Mullion 6060', nameAm: 'ከርተን ወል ሙሊዮን 6060', category: 'Profile', unit: 'meter', stock: 150, minStock: 50, reserved: 80, available: 70, location: 'R1-B1', cost: 180 },
+  { id: 'INV-004', code: 'GL-CLR-06', name: '6mm Clear Tempered Glass', nameAm: '6ሚሜ ግልጽ ጠንካራ መስታወት', category: 'Glass', unit: 'sqm', stock: 85, minStock: 30, reserved: 25, available: 60, location: 'R2-A1', cost: 450 },
+  { id: 'INV-005', code: 'GL-TNT-08', name: '8mm Tinted Tempered Glass', nameAm: '8ሚሜ ቀለም ጠንካራ መስታወት', category: 'Glass', unit: 'sqm', stock: 45, minStock: 20, reserved: 15, available: 30, location: 'R2-A2', cost: 620 },
+  { id: 'INV-006', code: 'GL-DGU-12', name: '12mm DGU Glass Unit', nameAm: '12ሚሜ ዲጂዩ መስታወት', category: 'Glass', unit: 'sqm', stock: 25, minStock: 15, reserved: 10, available: 15, location: 'R2-B1', cost: 1200 },
+  { id: 'INV-007', code: 'HW-HNG-01', name: 'Heavy Duty Hinge (pair)', nameAm: 'ከባድ ሂንጅ (ጥንድ)', category: 'Hardware', unit: 'pair', stock: 120, minStock: 40, reserved: 30, available: 90, location: 'R3-A1', cost: 350 },
+  { id: 'INV-008', code: 'HW-LCK-01', name: 'Multi-point Lock System', nameAm: 'ብዙ-ነጥብ ቁልፍ ስርዓት', category: 'Hardware', unit: 'piece', stock: 65, minStock: 25, reserved: 15, available: 50, location: 'R3-A2', cost: 850 },
+  { id: 'INV-009', code: 'HW-HDL-01', name: 'Aluminum Handle Set', nameAm: 'የአልሚኒየም እጀታ ስብስብ', category: 'Hardware', unit: 'set', stock: 95, minStock: 30, reserved: 20, available: 75, location: 'R3-B1', cost: 280 },
+  { id: 'INV-010', code: 'AC-GSK-01', name: 'EPDM Gasket Roll', nameAm: 'ኢፒዲኤም ጋስኬት ጥቅል', category: 'Accessory', unit: 'meter', stock: 500, minStock: 200, reserved: 100, available: 400, location: 'R4-A1', cost: 25 },
+  { id: 'INV-011', code: 'AC-WS-01', name: 'Weather Strip Roll', nameAm: 'የአየር ሁኔታ ስትሪፕ ጥቅል', category: 'Accessory', unit: 'meter', stock: 350, minStock: 150, reserved: 80, available: 270, location: 'R4-A2', cost: 18 },
+  { id: 'INV-012', code: 'AC-SIL-01', name: 'Silicone Sealant (tube)', nameAm: 'ሲሊኮን ማተሚያ (ቱቦ)', category: 'Accessory', unit: 'piece', stock: 180, minStock: 50, reserved: 30, available: 150, location: 'R4-B1', cost: 120 },
+  { id: 'INV-013', code: 'AC-SCR-01', name: 'Self-tapping Screws (box)', nameAm: 'ራስ-ቆፋሪ ብሎኖች (ሳጥን)', category: 'Accessory', unit: 'box', stock: 45, minStock: 20, reserved: 10, available: 35, location: 'R4-B2', cost: 85 },
+  { id: 'INV-014', code: 'ST-ANG-01', name: 'Steel Angle 40x40mm', nameAm: 'ብረት አንግል 40x40ሚሜ', category: 'Steel', unit: 'meter', stock: 8, minStock: 30, reserved: 0, available: 8, location: 'R5-A1', cost: 95 },
+  { id: 'INV-015', code: 'ST-PLT-01', name: 'Steel Base Plate 6mm', nameAm: 'ብረት መሰረት ሰሌዳ 6ሚሜ', category: 'Steel', unit: 'piece', stock: 12, minStock: 10, reserved: 5, available: 7, location: 'R5-A2', cost: 250 },
+];
+
+// ═══ SAMPLE CUSTOMERS ═══
 export const sampleCustomers: Customer[] = [
-  { id: 'CUS-001', company: 'Pacific Metal Works', contact: 'James Chen', phone: '(555) 123-4567', email: 'james@pacificmetal.com', billingAddress: '123 Industrial Blvd, Portland, OR 97201', shippingAddress: '123 Industrial Blvd, Portland, OR 97201', taxId: '12-3456789', paymentTerms: 'Net 30', creditLimit: 50000, customerType: 'Fabricator', status: 'Active', totalOrders: 47, totalSpent: 128450 },
-  { id: 'CUS-002', company: 'BuildRight Construction', contact: 'Sarah Martinez', phone: '(555) 234-5678', email: 'sarah@buildright.com', billingAddress: '456 Main St, Seattle, WA 98101', shippingAddress: '789 Job Site Rd, Tacoma, WA 98402', taxId: '98-7654321', paymentTerms: 'Net 60', creditLimit: 75000, customerType: 'Contractor', status: 'Active', totalOrders: 23, totalSpent: 89200 },
-  { id: 'CUS-003', company: 'Precision Aero Parts', contact: 'David Kim', phone: '(555) 345-6789', email: 'david@precisionaero.com', billingAddress: '100 Aerospace Way, Everett, WA 98203', shippingAddress: '100 Aerospace Way, Everett, WA 98203', taxId: '55-1234567', paymentTerms: 'Net 30', creditLimit: 100000, customerType: 'Fabricator', status: 'Active', totalOrders: 62, totalSpent: 245800 },
-  { id: 'CUS-004', company: 'Metro Window & Door', contact: 'Lisa Thompson', phone: '(555) 456-7890', email: 'lisa@metrowindow.com', billingAddress: '200 Commerce Dr, Vancouver, WA 98660', shippingAddress: '200 Commerce Dr, Vancouver, WA 98660', taxId: '33-9876543', paymentTerms: 'COD', creditLimit: 25000, customerType: 'Wholesale', status: 'Active', totalOrders: 15, totalSpent: 34500 },
-  { id: 'CUS-005', company: 'Harbor Marine Supply', contact: 'Mike O\'Brien', phone: '(555) 567-8901', email: 'mike@harbormarine.com', billingAddress: '50 Dock Rd, Astoria, OR 97103', shippingAddress: '50 Dock Rd, Astoria, OR 97103', taxId: '77-5432109', paymentTerms: 'Net 30', creditLimit: 40000, customerType: 'Distributor', status: 'Active', totalOrders: 31, totalSpent: 67300 },
-  { id: 'CUS-006', company: 'DIY Home Center', contact: 'Robert Williams', phone: '(555) 678-9012', email: 'robert@diyhome.com', billingAddress: '900 Retail Ave, Bend, OR 97701', shippingAddress: '900 Retail Ave, Bend, OR 97701', taxId: '44-1112223', paymentTerms: 'COD', creditLimit: 10000, customerType: 'Retail', status: 'Active', totalOrders: 8, totalSpent: 4200 },
+  { id: 'CUS-001', name: 'Ayat Real Estate', nameAm: 'አያት ሪል ኢስቴት', contact: 'Ato Yonas Bekele', type: 'Developer', phone: '+251-911-234567', email: 'yonas@ayatre.com', address: 'Bole, Addis Ababa', projects: 3, totalValue: 2500000, outstanding: 425000 },
+  { id: 'CUS-002', name: 'Ato Kebede Alemu', nameAm: 'አቶ ከበደ ዓለሙ', contact: 'Kebede Alemu', type: 'Individual', phone: '+251-912-345678', email: 'kebede@gmail.com', address: 'CMC, Addis Ababa', projects: 1, totalValue: 285000, outstanding: 142500 },
+  { id: 'CUS-003', name: 'Ethio Engineering', nameAm: 'ኢትዮ ኢንጅነሪንግ', contact: 'Eng. Dawit Tesfaye', type: 'Contractor', phone: '+251-913-456789', email: 'dawit@ethioeng.com', address: 'Megenagna, Addis Ababa', projects: 5, totalValue: 3800000, outstanding: 300000 },
+  { id: 'CUS-004', name: 'Getahun Hotels PLC', nameAm: 'ጌታሁን ሆቴሎች ኃ/የ/ማ', contact: 'W/ro Meron Getahun', type: 'Company', phone: '+251-914-567890', email: 'meron@getahunhotels.com', address: 'Sarbet, Addis Ababa', projects: 2, totalValue: 950000, outstanding: 450000 },
+  { id: 'CUS-005', name: 'Noah Construction', nameAm: 'ኖህ ኮንስትራክሽን', contact: 'Ato Samuel Noah', type: 'Contractor', phone: '+251-915-678901', email: 'samuel@noahcon.com', address: 'Lideta, Addis Ababa', projects: 4, totalValue: 1800000, outstanding: 130000 },
+  { id: 'CUS-006', name: 'Commercial Bank Ethiopia', nameAm: 'የኢትዮጵያ ንግድ ባንክ', contact: 'Ato Tadesse Girma', type: 'Company', phone: '+251-916-789012', email: 'tadesse@cbe.com.et', address: 'Kazanchis, Addis Ababa', projects: 1, totalValue: 380000, outstanding: 190000 },
+  { id: 'CUS-007', name: 'W/ro Tigist Haile', nameAm: 'ወ/ሮ ትግስት ኃይሌ', contact: 'Tigist Haile', type: 'Individual', phone: '+251-917-890123', email: 'tigist@yahoo.com', address: 'Bole Atlas, Addis Ababa', projects: 1, totalValue: 195000, outstanding: 0 },
+  { id: 'CUS-008', name: 'Addis Builders PLC', nameAm: 'አዲስ ገንቢዎች ኃ/የ/ማ', contact: 'Ato Henok Assefa', type: 'Contractor', phone: '+251-918-901234', email: 'henok@addisbuilders.com', address: 'Mexico, Addis Ababa', projects: 2, totalValue: 620000, outstanding: 85000 },
 ];
 
-// ═══ ORDERS ═══
-export const sampleOrders: Order[] = [
-  { id: 'ORD-2025-001', customerId: 'CUS-003', customerName: 'Precision Aero Parts', date: '2025-02-25', deliveryDate: '2025-03-05', status: 'Processing', paymentStatus: 'Paid', total: 12450, items: 4 },
-  { id: 'ORD-2025-002', customerId: 'CUS-001', customerName: 'Pacific Metal Works', date: '2025-02-24', deliveryDate: '2025-03-01', status: 'Ready', paymentStatus: 'Paid', total: 8320, items: 3 },
-  { id: 'ORD-2025-003', customerId: 'CUS-002', customerName: 'BuildRight Construction', date: '2025-02-23', deliveryDate: '2025-03-10', status: 'Quote Accepted', paymentStatus: 'Unpaid', total: 15780, items: 6 },
-  { id: 'ORD-2025-004', customerId: 'CUS-005', customerName: 'Harbor Marine Supply', date: '2025-02-22', deliveryDate: '2025-02-28', status: 'Shipped', paymentStatus: 'Paid', total: 6200, items: 2 },
-  { id: 'ORD-2025-005', customerId: 'CUS-004', customerName: 'Metro Window & Door', date: '2025-02-20', deliveryDate: '2025-02-27', status: 'Delivered', paymentStatus: 'Partial', total: 9450, items: 5 },
-  { id: 'ORD-2025-006', customerId: 'CUS-001', customerName: 'Pacific Metal Works', date: '2025-02-18', deliveryDate: '2025-02-25', status: 'Completed', paymentStatus: 'Paid', total: 4850, items: 2 },
-  { id: 'ORD-2025-007', customerId: 'CUS-006', customerName: 'DIY Home Center', date: '2025-02-26', deliveryDate: '2025-03-08', status: 'Draft', paymentStatus: 'Unpaid', total: 1250, items: 1 },
-];
-
-// ═══ QUOTES ═══
+// ═══ SAMPLE QUOTES ═══
 export const sampleQuotes: Quote[] = [
-  { id: 'QT-2025-001', customerId: 'CUS-002', customerName: 'BuildRight Construction', date: '2025-02-24', validUntil: '2025-03-10', status: 'Sent', total: 22500, items: 8, margin: 34 },
-  { id: 'QT-2025-002', customerId: 'CUS-003', customerName: 'Precision Aero Parts', date: '2025-02-22', validUntil: '2025-03-08', status: 'Accepted', total: 18900, items: 5, margin: 42 },
-  { id: 'QT-2025-003', customerId: 'CUS-005', customerName: 'Harbor Marine Supply', date: '2025-02-20', validUntil: '2025-03-06', status: 'Draft', total: 7800, items: 3, margin: 28 },
-  { id: 'QT-2025-004', customerId: 'CUS-001', customerName: 'Pacific Metal Works', date: '2025-02-15', validUntil: '2025-03-01', status: 'Expired', total: 5400, items: 2, margin: 31 },
-  { id: 'QT-2025-005', customerId: 'CUS-004', customerName: 'Metro Window & Door', date: '2025-02-26', validUntil: '2025-03-12', status: 'Sent', total: 11200, items: 4, margin: 38 },
+  { id: 'QT-001', customerId: 'CUS-004', customerName: 'Getahun Hotels PLC', projectName: 'Sarbet Hotel Renovation', items: 12, materialCost: 280000, laborCost: 85000, installCost: 45000, transportCost: 15000, subtotal: 425000, vat: 63750, total: 488750, status: 'Pending', date: '2025-02-20', validity: '2025-03-20' },
+  { id: 'QT-002', customerId: 'CUS-001', customerName: 'Ayat Real Estate', projectName: 'Bole Tower B', items: 45, materialCost: 520000, laborCost: 150000, installCost: 80000, transportCost: 25000, subtotal: 775000, vat: 116250, total: 891250, status: 'Pending', date: '2025-02-18', validity: '2025-03-18' },
+  { id: 'QT-003', customerId: 'CUS-008', customerName: 'Addis Builders PLC', projectName: 'Residential Complex G+5', items: 28, materialCost: 185000, laborCost: 55000, installCost: 35000, transportCost: 10000, subtotal: 285000, vat: 42750, total: 327750, status: 'Accepted', date: '2025-02-10', validity: '2025-03-10' },
+  { id: 'QT-004', customerId: 'CUS-002', customerName: 'Ato Kebede Alemu', projectName: 'Villa Gate & Windows', items: 8, materialCost: 65000, laborCost: 18000, installCost: 12000, transportCost: 5000, subtotal: 100000, vat: 15000, total: 115000, status: 'Rejected', date: '2025-01-25', validity: '2025-02-25' },
+  { id: 'QT-005', customerId: 'CUS-005', customerName: 'Noah Construction', projectName: 'CMC Phase 2 Block C', items: 35, materialCost: 320000, laborCost: 95000, installCost: 55000, transportCost: 18000, subtotal: 488000, vat: 73200, total: 561200, status: 'Accepted', date: '2025-02-05', validity: '2025-03-05' },
 ];
 
-// ═══ SUPPLIERS ═══
+// ═══ SAMPLE WORK ORDERS ═══
+export const sampleWorkOrders: WorkOrder[] = [
+  { id: 'WO-001', projectId: 'PJ-001', productId: 'PRD-001', productName: 'Sliding Window 2-Panel', quantity: 48, completed: 22, assignee: 'Team Alpha', priority: 'High', stage: 'Assembly', progress: 46, startDate: '2025-02-10', dueDate: '2025-03-15' },
+  { id: 'WO-002', projectId: 'PJ-001', productId: 'PRD-004', productName: 'Sliding Door 3-Panel', quantity: 12, completed: 5, assignee: 'Team Beta', priority: 'High', stage: 'Welding', progress: 42, startDate: '2025-02-12', dueDate: '2025-03-20' },
+  { id: 'WO-003', projectId: 'PJ-002', productId: 'PRD-002', productName: 'Casement Window Single', quantity: 16, completed: 0, assignee: 'Team Alpha', priority: 'Medium', stage: 'Cutting', progress: 5, startDate: '2025-02-25', dueDate: '2025-04-01' },
+  { id: 'WO-004', projectId: 'PJ-003', productId: 'PRD-007', productName: 'Curtain Wall System', quantity: 1, completed: 0, assignee: 'Team Gamma', priority: 'High', stage: 'Glazing', progress: 75, startDate: '2025-01-15', dueDate: '2025-03-01' },
+  { id: 'WO-005', projectId: 'PJ-005', productId: 'PRD-001', productName: 'Sliding Window 2-Panel', quantity: 32, completed: 30, assignee: 'Team Beta', priority: 'Medium', stage: 'Quality Check', progress: 94, startDate: '2025-01-20', dueDate: '2025-02-28' },
+  { id: 'WO-006', projectId: 'PJ-005', productId: 'PRD-005', productName: 'Hinged Door Double', quantity: 8, completed: 8, assignee: 'Team Alpha', priority: 'Low', stage: 'Packaging', progress: 100, startDate: '2025-02-01', dueDate: '2025-02-28' },
+  { id: 'WO-007', projectId: 'PJ-003', productId: 'PRD-008', productName: 'Glass Handrail System', quantity: 6, completed: 4, assignee: 'Team Gamma', priority: 'High', stage: 'Assembly', progress: 67, startDate: '2025-02-05', dueDate: '2025-03-10' },
+  { id: 'WO-008', projectId: 'PJ-001', productId: 'PRD-003', productName: 'Fixed Window Large', quantity: 24, completed: 10, assignee: 'Team Beta', priority: 'Medium', stage: 'Machining', progress: 42, startDate: '2025-02-15', dueDate: '2025-03-25' },
+  { id: 'WO-009', projectId: 'PJ-006', productId: 'PRD-010', productName: 'Office Partition System', quantity: 4, completed: 0, assignee: 'Team Alpha', priority: 'Medium', stage: 'Cutting', progress: 0, startDate: '2025-03-01', dueDate: '2025-04-15' },
+  { id: 'WO-010', projectId: 'PJ-002', productId: 'PRD-009', productName: 'Aluminum Louver Window', quantity: 6, completed: 0, assignee: 'Team Beta', priority: 'Low', stage: 'Cutting', progress: 0, startDate: '2025-03-05', dueDate: '2025-04-10' },
+];
+
+// ═══ SAMPLE INVOICES ═══
+export const sampleInvoices: Invoice[] = [
+  { id: 'INV-001', projectId: 'PJ-001', customerName: 'Ayat Real Estate', amount: 425000, paid: 425000, balance: 0, status: 'Paid', dueDate: '2025-02-15' },
+  { id: 'INV-002', projectId: 'PJ-001', customerName: 'Ayat Real Estate', amount: 425000, paid: 0, balance: 425000, status: 'Overdue', dueDate: '2025-02-28' },
+  { id: 'INV-003', projectId: 'PJ-002', customerName: 'Ato Kebede Alemu', amount: 142500, paid: 142500, balance: 0, status: 'Paid', dueDate: '2025-03-01' },
+  { id: 'INV-004', projectId: 'PJ-003', customerName: 'Ethio Engineering', amount: 600000, paid: 600000, balance: 0, status: 'Paid', dueDate: '2025-01-30' },
+  { id: 'INV-005', projectId: 'PJ-003', customerName: 'Ethio Engineering', amount: 300000, paid: 300000, balance: 0, status: 'Paid', dueDate: '2025-02-15' },
+  { id: 'INV-006', projectId: 'PJ-003', customerName: 'Ethio Engineering', amount: 300000, paid: 150000, balance: 150000, status: 'Partial', dueDate: '2025-03-15' },
+  { id: 'INV-007', projectId: 'PJ-005', customerName: 'Noah Construction', amount: 260000, paid: 260000, balance: 0, status: 'Paid', dueDate: '2025-01-10' },
+  { id: 'INV-008', projectId: 'PJ-006', customerName: 'Commercial Bank Ethiopia', amount: 190000, paid: 190000, balance: 0, status: 'Paid', dueDate: '2025-03-10' },
+];
+
+// ═══ SAMPLE PAYMENTS ═══
+export const samplePayments: Payment[] = [
+  { id: 'PAY-001', invoiceId: 'INV-001', date: '2025-02-10', customerName: 'Ayat Real Estate', amount: 425000, method: 'Bank Transfer', reference: 'CBE-TXN-20250210-001' },
+  { id: 'PAY-002', invoiceId: 'INV-003', date: '2025-02-25', customerName: 'Ato Kebede Alemu', amount: 142500, method: 'TeleBirr', reference: 'TB-20250225-4521' },
+  { id: 'PAY-003', invoiceId: 'INV-004', date: '2025-01-28', customerName: 'Ethio Engineering', amount: 300000, method: 'Bank Transfer', reference: 'CBE-TXN-20250128-005' },
+  { id: 'PAY-004', invoiceId: 'INV-004', date: '2025-01-30', customerName: 'Ethio Engineering', amount: 300000, method: 'Bank Transfer', reference: 'CBE-TXN-20250130-002' },
+  { id: 'PAY-005', invoiceId: 'INV-005', date: '2025-02-14', customerName: 'Ethio Engineering', amount: 300000, method: 'Bank Transfer', reference: 'CBE-TXN-20250214-008' },
+  { id: 'PAY-006', invoiceId: 'INV-006', date: '2025-03-01', customerName: 'Ethio Engineering', amount: 150000, method: 'Cheque', reference: 'CHQ-0045821' },
+  { id: 'PAY-007', invoiceId: 'INV-007', date: '2025-01-05', customerName: 'Noah Construction', amount: 130000, method: 'Bank Transfer', reference: 'CBE-TXN-20250105-003' },
+  { id: 'PAY-008', invoiceId: 'INV-007', date: '2025-01-10', customerName: 'Noah Construction', amount: 130000, method: 'Cash', reference: 'CASH-20250110-001' },
+  { id: 'PAY-009', invoiceId: 'INV-008', date: '2025-03-05', customerName: 'Commercial Bank Ethiopia', amount: 190000, method: 'Bank Transfer', reference: 'CBE-TXN-20250305-010' },
+  { id: 'PAY-010', invoiceId: 'INV-005', date: '2025-02-20', customerName: 'Noah Construction', amount: 65000, method: 'TeleBirr', reference: 'TB-20250220-7812' },
+  { id: 'PAY-011', invoiceId: 'INV-001', date: '2025-02-12', customerName: 'Ayat Real Estate', amount: 200000, method: 'Cheque', reference: 'CHQ-0045799' },
+  { id: 'PAY-012', invoiceId: 'INV-002', date: '2025-02-28', customerName: 'Getahun Hotels PLC', amount: 95000, method: 'Bank Transfer', reference: 'CBE-TXN-20250228-015' },
+];
+
+// ═══ SAMPLE EMPLOYEES ═══
+export const sampleEmployees: Employee[] = [
+  { id: 'EMP-001', name: 'Abebe Tekle', nameAm: 'አበበ ተክሌ', position: 'Production Manager', department: 'Production', email: 'abebe@aluerp.com', phone: '+251-911-111111', hireDate: '2020-03-15', status: 'active', salary: 35000, performance: 92 },
+  { id: 'EMP-002', name: 'Hana Mulugeta', nameAm: 'ሃና ሙሉጌታ', position: 'Sales Manager', department: 'Sales', email: 'hana@aluerp.com', phone: '+251-912-222222', hireDate: '2021-06-01', status: 'active', salary: 28000, performance: 88 },
+  { id: 'EMP-003', name: 'Yosef Bekele', nameAm: 'ዮሴፍ በቀለ', position: 'Lead Fabricator', department: 'Production', email: 'yosef@aluerp.com', phone: '+251-913-333333', hireDate: '2019-09-20', status: 'active', salary: 22000, performance: 95 },
+  { id: 'EMP-004', name: 'Sara Desta', nameAm: 'ሳራ ደስታ', position: 'Accountant', department: 'Finance', email: 'sara@aluerp.com', phone: '+251-914-444444', hireDate: '2022-01-10', status: 'active', salary: 25000, performance: 85 },
+  { id: 'EMP-005', name: 'Dawit Hailu', nameAm: 'ዳዊት ኃይሉ', position: 'Installation Lead', department: 'Installation', email: 'dawit@aluerp.com', phone: '+251-915-555555', hireDate: '2020-08-05', status: 'active', salary: 20000, performance: 90 },
+  { id: 'EMP-006', name: 'Marta Teshome', nameAm: 'ማርታ ተሾመ', position: 'Quality Inspector', department: 'Quality', email: 'marta@aluerp.com', phone: '+251-916-666666', hireDate: '2023-02-15', status: 'on-leave', salary: 18000, performance: 87 },
+];
+
+// ═══ SAMPLE SUPPLIERS ═══
 export const sampleSuppliers: Supplier[] = [
-  { id: 'SUP-001', company: 'Alcoa Mill Products', contact: 'Tom Anderson', phone: '(800) 555-0101', email: 'sales@alcoa.example.com', leadTime: 14, rating: 5, preferred: true, paymentTerms: 'Net 30' },
-  { id: 'SUP-002', company: 'Pacific Aluminum Supply', contact: 'Nancy Wu', phone: '(800) 555-0202', email: 'orders@pacificalum.example.com', leadTime: 7, rating: 4, preferred: true, paymentTerms: 'Net 30' },
-  { id: 'SUP-003', company: 'Global Metal Trading', contact: 'Ahmed Hassan', phone: '(800) 555-0303', email: 'info@globalmetals.example.com', leadTime: 21, rating: 3, preferred: false, paymentTerms: 'Net 45' },
-  { id: 'SUP-004', company: 'Northwest Extrusions', contact: 'Karen Mills', phone: '(800) 555-0404', email: 'karen@nwextrusions.example.com', leadTime: 10, rating: 4, preferred: true, paymentTerms: 'Net 30' },
+  { id: 'SUP-001', company: 'Emirates Aluminum (EMAL)', contact: 'Ahmed Al-Rashid', phone: '+971-50-1234567', email: 'ahmed@emal.ae', country: 'UAE', leadTime: 45, rating: 5, preferred: true, paymentTerms: 'LC 90 Days', certifications: ['ISO 9001', 'ISO 14001'] },
+  { id: 'SUP-002', company: 'China Zhongwang Holdings', contact: 'Li Wei', phone: '+86-139-1234567', email: 'liwei@zhongwang.com', country: 'China', leadTime: 60, rating: 4, preferred: true, paymentTerms: 'TT 30%/70%', certifications: ['ISO 9001'] },
+  { id: 'SUP-003', company: 'Schüco International', contact: 'Hans Mueller', phone: '+49-170-1234567', email: 'mueller@schueco.com', country: 'Germany', leadTime: 75, rating: 5, preferred: false, paymentTerms: 'LC 60 Days', certifications: ['ISO 9001', 'ISO 14001', 'CE'] },
+  { id: 'SUP-004', company: 'Addis Glass Factory', contact: 'Ato Tewodros Mengistu', phone: '+251-911-987654', email: 'tewodros@addisglass.com', country: 'Ethiopia', leadTime: 7, rating: 4, preferred: true, paymentTerms: 'Net 30', certifications: ['ES ISO'] },
+  { id: 'SUP-005', company: 'Guangzhou Hardware Co.', contact: 'Chen Xiao', phone: '+86-135-9876543', email: 'chen@gzhardware.com', country: 'China', leadTime: 55, rating: 3, preferred: false, paymentTerms: 'TT 50%/50%', certifications: ['ISO 9001'] },
 ];
 
-// ═══ CUTTING JOBS ═══
-export const sampleCuttingJobs: CuttingJob[] = [
-  { id: 'CUT-001', orderId: 'ORD-2025-001', product: '6061-T6 Sheet 4x8', originalLength: 2438, cuts: 6, waste: 2.3, assignedTo: 'Mike R.', status: 'In Progress', date: '2025-02-26' },
-  { id: 'CUT-002', orderId: 'ORD-2025-002', product: '6063-T6 Square Tube 2x2', originalLength: 6000, cuts: 12, waste: 1.8, assignedTo: 'Steve L.', status: 'Pending', date: '2025-02-27' },
-  { id: 'CUT-003', orderId: 'ORD-2025-004', product: '5083-H14 Plate 1/2"', originalLength: 2438, cuts: 4, waste: 3.1, assignedTo: 'Mike R.', status: 'Completed', date: '2025-02-24' },
+// ═══ SAMPLE INSTALLATIONS ═══
+export const sampleInstallations: Installation[] = [
+  { id: 'INST-001', projectId: 'PJ-003', projectName: 'Megenagna Office Complex', customerName: 'Ethio Engineering', address: 'Megenagna, Addis Ababa', scheduledDate: '2025-02-28', team: 'Install Team A', status: 'In Progress', notes: 'Curtain wall floor 5-8 ongoing', notesAm: 'ከርተን ወል ወለል 5-8 በሂደት ላይ' },
+  { id: 'INST-002', projectId: 'PJ-005', projectName: 'CMC Residential Block', customerName: 'Noah Construction', address: 'CMC, Addis Ababa', scheduledDate: '2025-03-01', team: 'Install Team B', status: 'Scheduled', notes: 'Windows Block A, floors 1-3', notesAm: 'መስኮቶች ብሎክ ሀ ወለል 1-3' },
+  { id: 'INST-003', projectId: 'PJ-001', projectName: 'Bole Apartments Tower A', customerName: 'Ayat Real Estate', address: 'Bole, Addis Ababa', scheduledDate: '2025-03-15', team: 'Install Team A', status: 'Scheduled', notes: 'Pending production completion', notesAm: 'የምርት ማጠናቀቂያ በመጠባበቅ ላይ' },
 ];
 
-// ═══ ACTIVITIES ═══
+// ═══ SAMPLE MAINTENANCE TASKS ═══
+export const sampleMaintenanceTasks: MaintenanceTask[] = [
+  { id: 'MT-001', machineId: 'M-001', machineName: 'Double Head Cutting Machine', type: 'Preventive', scheduledDate: '2025-03-01', status: 'Scheduled', assignee: 'Yosef Bekele', notes: 'Blade replacement and calibration' },
+  { id: 'MT-002', machineId: 'M-002', machineName: 'CNC Copy Router', type: 'Corrective', scheduledDate: '2025-02-27', status: 'Overdue', assignee: 'Abebe Tekle', notes: 'Motor bearing replacement needed' },
+  { id: 'MT-003', machineId: 'M-003', machineName: 'Crimping Machine', type: 'Preventive', scheduledDate: '2025-03-05', status: 'Scheduled', assignee: 'Yosef Bekele', notes: 'Regular maintenance check' },
+  { id: 'MT-004', machineId: 'M-004', machineName: 'Glass Cutting Table', type: 'Predictive', scheduledDate: '2025-03-10', status: 'Scheduled', assignee: 'Dawit Hailu', notes: 'Sensor indicates wear on cutting wheel' },
+];
+
+// ═══ SAMPLE QUALITY CHECKS ═══
+export const sampleQualityChecks: QualityCheck[] = [
+  { id: 'QC-001', workOrderId: 'WO-005', productName: 'Sliding Window 2-Panel', inspector: 'Marta Teshome', date: '2025-02-25', result: 'Pass', defects: [], notes: 'All specs within tolerance' },
+  { id: 'QC-002', workOrderId: 'WO-001', productName: 'Sliding Window 2-Panel', inspector: 'Marta Teshome', date: '2025-02-26', result: 'Conditional', defects: ['Minor scratch on frame'], notes: 'Touch-up required before packaging' },
+  { id: 'QC-003', workOrderId: 'WO-004', productName: 'Curtain Wall System', inspector: 'Abebe Tekle', date: '2025-02-27', result: 'Pass', defects: [], notes: 'Pressure test passed' },
+  { id: 'QC-004', workOrderId: 'WO-002', productName: 'Sliding Door 3-Panel', inspector: 'Marta Teshome', date: '2025-02-26', result: 'Fail', defects: ['Welding defect', 'Alignment off by 2mm'], notes: 'Rework required' },
+];
+
+// ═══ SAMPLE ACTIVITIES ═══
 export const sampleActivities: Activity[] = [
-  { id: '1', type: 'order', message: 'New order ORD-2025-007 from DIY Home Center', time: '10 min ago' },
-  { id: '2', type: 'alert', message: '2024-T4 Sheet stock critically low (2 remaining)', time: '25 min ago' },
-  { id: '3', type: 'stock', message: '50 units of 6063-T5 Profile received from Pacific Aluminum', time: '1 hour ago' },
-  { id: '4', type: 'quote', message: 'Quote QT-2025-005 sent to Metro Window & Door', time: '2 hours ago' },
-  { id: '5', type: 'order', message: 'Order ORD-2025-004 shipped to Harbor Marine Supply', time: '3 hours ago' },
-  { id: '6', type: 'alert', message: '5052-H32 Sheet stock low (3 remaining, min: 15)', time: '4 hours ago' },
-  { id: '7', type: 'stock', message: 'Stock adjustment: 6061-T6 Angle -2 units (damaged)', time: '5 hours ago' },
-  { id: '8', type: 'order', message: 'Payment received for ORD-2025-001 ($12,450)', time: '6 hours ago' },
+  { id: '1', type: 'production', message: 'Work Order WO-005 quality check passed', messageAm: 'የሥራ ትዕዛዝ WO-005 ጥራት ምርመራ አልፏል', time: '10 min ago' },
+  { id: '2', type: 'alert', message: 'Steel Angle 40x40mm critically low (8 remaining)', messageAm: 'ብረት አንግል 40x40ሚሜ በጣም ዝቅ (8 ቀሪ)', time: '25 min ago' },
+  { id: '3', type: 'stock', message: '200m Window Frame Profile received', messageAm: '200ሜ የመስኮት ፍሬም ፕሮፋይል ተቀብሏል', time: '1 hour ago' },
+  { id: '4', type: 'quote', message: 'Quote QT-001 sent to Getahun Hotels', messageAm: 'ዋጋ ግምት QT-001 ለጌታሁን ሆቴሎች ተልኳል', time: '2 hours ago' },
+  { id: '5', type: 'install', message: 'Installation INST-001 started at Megenagna', messageAm: 'ማስገጠም INST-001 በመገናኛ ተጀምሯል', time: '3 hours ago' },
+  { id: '6', type: 'order', message: 'PJ-006 deposit received from CBE', messageAm: 'PJ-006 ቅድመ ክፍያ ከንግድ ባንክ ተቀብሏል', time: '4 hours ago' },
+  { id: '7', type: 'production', message: 'WO-006 completed - 8 Hinged Doors packaged', messageAm: 'WO-006 ተጠናቋል - 8 የሚከፈት በሮች ተጠቅልለዋል', time: '5 hours ago' },
+  { id: '8', type: 'alert', message: 'Maintenance overdue: CNC Copy Router', messageAm: 'ጥገና ያለፈው ጊዜ: CNC ኮፒ ራውተር', time: '6 hours ago' },
 ];
 
 // ═══ CHART DATA ═══
-export const salesTrendData = [
-  { date: 'Jan 28', sales: 4200 }, { date: 'Jan 29', sales: 3800 }, { date: 'Jan 30', sales: 5100 },
-  { date: 'Jan 31', sales: 4800 }, { date: 'Feb 01', sales: 3200 }, { date: 'Feb 02', sales: 1800 },
-  { date: 'Feb 03', sales: 6200 }, { date: 'Feb 04', sales: 5800 }, { date: 'Feb 05', sales: 7100 },
-  { date: 'Feb 06', sales: 6400 }, { date: 'Feb 07', sales: 5200 }, { date: 'Feb 08', sales: 2400 },
-  { date: 'Feb 09', sales: 3100 }, { date: 'Feb 10', sales: 5500 }, { date: 'Feb 11', sales: 6800 },
-  { date: 'Feb 12', sales: 7200 }, { date: 'Feb 13', sales: 6100 }, { date: 'Feb 14', sales: 5900 },
-  { date: 'Feb 15', sales: 4200 }, { date: 'Feb 16', sales: 2800 }, { date: 'Feb 17', sales: 7800 },
-  { date: 'Feb 18', sales: 8200 }, { date: 'Feb 19', sales: 6900 }, { date: 'Feb 20', sales: 7500 },
-  { date: 'Feb 21', sales: 8100 }, { date: 'Feb 22', sales: 3500 }, { date: 'Feb 23', sales: 4100 },
-  { date: 'Feb 24', sales: 9200 }, { date: 'Feb 25', sales: 8400 }, { date: 'Feb 26', sales: 7600 },
+export const revenueTargetData = [
+  { month: 'Sep', revenue: 680000, target: 750000 },
+  { month: 'Oct', revenue: 820000, target: 750000 },
+  { month: 'Nov', revenue: 710000, target: 800000 },
+  { month: 'Dec', revenue: 950000, target: 800000 },
+  { month: 'Jan', revenue: 780000, target: 850000 },
+  { month: 'Feb', revenue: 890000, target: 850000 },
 ];
 
-export const topProductsData = [
-  { name: '6061-T6 Sheet', sales: 42500 },
-  { name: '6063-T5 Profile', sales: 38200 },
-  { name: '7075-T651 Plate', sales: 28900 },
-  { name: '6063-T6 Tube', sales: 22100 },
-  { name: '6061-T6 Round Bar', sales: 18400 },
+export const projectsByTypeData = [
+  { name: 'Residential', value: 35, fill: 'hsl(212, 72%, 42%)' },
+  { name: 'Commercial', value: 65, fill: 'hsl(38, 92%, 50%)' },
 ];
 
+export const salesTrendData = revenueTargetData;
+export const topProductsData = sampleProducts.slice(0, 5).map(p => ({ name: p.name.substring(0, 20), sales: p.sellingPrice * (Math.floor(Math.random() * 10) + 5) }));
 export const inventoryByAlloyData = [
-  { name: '6061', value: 35, fill: 'hsl(212, 72%, 42%)' },
-  { name: '6063', value: 28, fill: 'hsl(38, 92%, 50%)' },
-  { name: '7075', value: 12, fill: 'hsl(142, 72%, 40%)' },
-  { name: '5052', value: 10, fill: 'hsl(280, 60%, 50%)' },
-  { name: '2024', value: 8, fill: 'hsl(0, 72%, 51%)' },
-  { name: 'Other', value: 7, fill: 'hsl(215, 12%, 50%)' },
+  { name: 'Profiles', value: 35, fill: 'hsl(212, 72%, 42%)' },
+  { name: 'Glass', value: 25, fill: 'hsl(38, 92%, 50%)' },
+  { name: 'Hardware', value: 20, fill: 'hsl(142, 72%, 40%)' },
+  { name: 'Accessories', value: 15, fill: 'hsl(280, 60%, 50%)' },
+  { name: 'Steel', value: 5, fill: 'hsl(0, 72%, 51%)' },
 ];

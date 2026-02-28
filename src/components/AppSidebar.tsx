@@ -1,11 +1,14 @@
 import {
-  LayoutDashboard, Package, Calculator, ShoppingCart,
-  Users, Truck, Scissors, BarChart3, Shield, Settings,
-  Search, ChevronDown,
+  LayoutDashboard, Package, Boxes, Factory, Scissors, FolderKanban,
+  Users, FileText, Wrench, ShieldCheck, ClipboardCheck, Truck,
+  DollarSign, UserCog, BarChart3, Settings, Globe, Moon, Sun,
+  Search, Building2,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -13,22 +16,30 @@ import {
 } from "@/components/ui/sidebar";
 
 const modules = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Inventory", url: "/inventory", icon: Package },
-  { title: "Quotations", url: "/quotes", icon: Calculator },
-  { title: "Orders", url: "/orders", icon: ShoppingCart },
-  { title: "Customers", url: "/customers", icon: Users },
-  { title: "Suppliers", url: "/suppliers", icon: Truck },
-  { title: "Cutting Jobs", url: "/cutting", icon: Scissors },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "User Management", url: "/users", icon: Shield },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: 'nav.dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'nav.products', url: '/products', icon: Package },
+  { title: 'nav.inventory', url: '/inventory', icon: Boxes },
+  { title: 'nav.production', url: '/production', icon: Factory },
+  { title: 'nav.cutting', url: '/cutting', icon: Scissors },
+  { title: 'nav.projects', url: '/projects', icon: FolderKanban },
+  { title: 'nav.customers', url: '/customers', icon: Users },
+  { title: 'nav.quotes', url: '/quotes', icon: FileText },
+  { title: 'nav.installation', url: '/installation', icon: Wrench },
+  { title: 'nav.maintenance', url: '/maintenance', icon: ShieldCheck },
+  { title: 'nav.quality', url: '/quality', icon: ClipboardCheck },
+  { title: 'nav.procurement', url: '/procurement', icon: Truck },
+  { title: 'nav.finance', url: '/finance', icon: DollarSign },
+  { title: 'nav.hr', url: '/hr', icon: UserCog },
+  { title: 'nav.reports', url: '/reports', icon: BarChart3 },
+  { title: 'nav.users', url: '/users', icon: Building2 },
+  { title: 'nav.settings', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { t, language, setLanguage } = useI18n();
 
   return (
     <Sidebar collapsible="icon">
@@ -39,8 +50,8 @@ export function AppSidebar() {
               <Package className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-sidebar-primary-foreground">AluManager</h1>
-              <p className="text-[10px] text-sidebar-foreground/60">Business Management</p>
+              <h1 className="text-sm font-bold text-sidebar-primary-foreground">AluERP</h1>
+              <p className="text-[10px] text-sidebar-foreground/60">Window & Door MFG</p>
             </div>
           </div>
         )}
@@ -48,7 +59,7 @@ export function AppSidebar() {
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-sidebar-foreground/40" />
             <Input
-              placeholder="Search..."
+              placeholder={t('common.search')}
               className="pl-8 h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-sidebar-foreground/40"
             />
           </div>
@@ -71,7 +82,7 @@ export function AppSidebar() {
                       activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                     >
                       <item.icon className="h-4 w-4 mr-2 shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.title}</span>}
+                      {!collapsed && <span className="text-xs">{t(item.title)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -81,14 +92,32 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       {!collapsed && (
-        <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <SidebarFooter className="p-3 border-t border-sidebar-border space-y-2">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`flex-1 h-7 text-[10px] ${language === 'en' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/60'}`}
+              onClick={() => setLanguage('en')}
+            >
+              <Globe className="h-3 w-3 mr-1" />EN
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`flex-1 h-7 text-[10px] ${language === 'am' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground/60'}`}
+              onClick={() => setLanguage('am')}
+            >
+              <Globe className="h-3 w-3 mr-1" />አማ
+            </Button>
+          </div>
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-medium text-sidebar-accent-foreground">
               AD
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-sidebar-primary-foreground truncate">Admin User</p>
-              <p className="text-[10px] text-sidebar-foreground/50">admin@alumanager.com</p>
+              <p className="text-[10px] text-sidebar-foreground/50">admin@aluerp.com</p>
             </div>
           </div>
         </SidebarFooter>
