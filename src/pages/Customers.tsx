@@ -4,25 +4,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Plus, Building2 } from "lucide-react";
+import { Search, Plus, Building2, Trash2 } from "lucide-react";
 import { sampleCustomers } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import { AddCustomerDialog } from "@/components/dialogs/AddCustomerDialog";
+import type { Customer } from "@/data/sampleData";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Customers() {
+  const [customers, setCustomers] = useLocalStorage<Customer[]>(STORAGE_KEYS.CUSTOMERS, sampleCustomers);
   const [search, setSearch] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { t, language } = useI18n();
-  const filtered = sampleCustomers.filter(c =>
+  const { toast } = useToast();
+
+  const filtered = customers.filter(c =>
     !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.contact.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleDelete = (id: string) => {
+    setCustomers(prev => prev.filter(c => c.id !== id));
+    toast({ title: "Deleted", description: "Customer removed." });
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('nav.customers')}</h1>
-          <p className="text-sm text-muted-foreground">{sampleCustomers.length} {t('nav.customers').toLowerCase()}</p>
+          <p className="text-sm text-muted-foreground">{customers.length} {t('nav.customers').toLowerCase()}</p>
         </div>
-        <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1.5" />{t('common.add')}</Button>
+        <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />{t('common.add')}</Button>
       </div>
 
       <Card className="shadow-card">
@@ -46,6 +59,7 @@ export default function Customers() {
                 <TableHead className="text-xs text-right">Projects</TableHead>
                 <TableHead className="text-xs text-right">{t('common.total')} Value</TableHead>
                 <TableHead className="text-xs text-right">Outstanding</TableHead>
+                <TableHead className="text-xs"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -72,12 +86,17 @@ export default function Customers() {
                       ETB {c.outstanding.toLocaleString()}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(c.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <AddCustomerDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={c => setCustomers(prev => [...prev, c])} existingCount={customers.length} />
     </div>
   );
 }

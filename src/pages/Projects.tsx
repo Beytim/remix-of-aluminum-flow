@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Plus } from "lucide-react";
-import { sampleProjects } from "@/data/sampleData";
+import { Plus, Trash2 } from "lucide-react";
+import { sampleProjects, sampleCustomers } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import { AddProjectDialog } from "@/components/dialogs/AddProjectDialog";
+import type { Project, Customer } from "@/data/sampleData";
+import { useToast } from "@/hooks/use-toast";
 
 const statusColors: Record<string, string> = {
   Quote: 'bg-muted text-muted-foreground',
@@ -17,20 +22,29 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Projects() {
+  const [projects, setProjects] = useLocalStorage<Project[]>(STORAGE_KEYS.PROJECTS, sampleProjects);
+  const [customers] = useLocalStorage<Customer[]>(STORAGE_KEYS.CUSTOMERS, sampleCustomers);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { t, language } = useI18n();
+  const { toast } = useToast();
+
+  const handleDelete = (id: string) => {
+    setProjects(prev => prev.filter(p => p.id !== id));
+    toast({ title: "Deleted", description: "Project removed." });
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('nav.projects')}</h1>
-          <p className="text-sm text-muted-foreground">{sampleProjects.length} projects</p>
+          <p className="text-sm text-muted-foreground">{projects.length} projects</p>
         </div>
-        <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1.5" />New Project</Button>
+        <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />New Project</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sampleProjects.map(project => (
+        {projects.map(project => (
           <Card key={project.id} className="shadow-card hover:shadow-card-hover transition-shadow">
             <CardContent className="p-4 space-y-3">
               <div className="flex items-start justify-between">
@@ -39,7 +53,10 @@ export default function Projects() {
                   <h3 className="text-sm font-semibold mt-0.5">{language === 'am' ? project.nameAm : project.name}</h3>
                   <p className="text-[10px] text-muted-foreground">{project.customerName}</p>
                 </div>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[project.status]}`}>{project.status}</span>
+                <div className="flex items-center gap-1">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[project.status]}`}>{project.status}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(project.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 <span className="text-muted-foreground">Type: <strong className="text-foreground">{project.type}</strong></span>
@@ -70,6 +87,8 @@ export default function Projects() {
           </Card>
         ))}
       </div>
+
+      <AddProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={p => setProjects(prev => [...prev, p])} customers={customers} existingCount={projects.length} />
     </div>
   );
 }

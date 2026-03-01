@@ -1,22 +1,34 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 import { sampleWorkOrders } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import { useToast } from "@/hooks/use-toast";
+import type { WorkOrder } from "@/data/sampleData";
 
 const statusColor: Record<string, string> = {
   Cutting: 'bg-info/10 text-info',
   Machining: 'bg-primary/10 text-primary',
   Assembly: 'bg-warning/10 text-warning',
-  Welding: 'bg-destructive/10 text-destructive',
-  Glazing: 'bg-success/10 text-success',
-  'Quality Check': 'bg-info/10 text-info',
-  Packaging: 'bg-success/10 text-success',
 };
 
 export default function Cutting() {
+  const [workOrders, setWorkOrders] = useLocalStorage<WorkOrder[]>(STORAGE_KEYS.WORK_ORDERS, sampleWorkOrders);
   const { t } = useI18n();
-  const cuttingOrders = sampleWorkOrders.filter(w => w.stage === 'Cutting');
-  const allStages = ['Cutting', 'Machining', 'Assembly'] as const;
+  const { toast } = useToast();
+
+  const advanceProgress = (id: string) => {
+    setWorkOrders(prev => prev.map(wo =>
+      wo.id === id ? { ...wo, progress: Math.min(100, wo.progress + 10), completed: Math.min(wo.quantity, wo.completed + 1) } : wo
+    ));
+    toast({ title: "Progress Updated" });
+  };
 
   return (
     <div className="space-y-4">
@@ -27,7 +39,7 @@ export default function Cutting() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {(['Cutting', 'Machining', 'Assembly'] as const).map(stage => {
-          const jobs = sampleWorkOrders.filter(j => j.stage === stage);
+          const jobs = workOrders.filter(j => j.stage === stage);
           return (
             <Card key={stage} className="shadow-card">
               <CardContent className="p-4">
@@ -49,6 +61,11 @@ export default function Cutting() {
                         <span className="text-muted-foreground">Team: <strong className="text-foreground">{job.assignee}</strong></span>
                         <span className="text-muted-foreground">Due: <strong className="text-foreground">{job.dueDate}</strong></span>
                       </div>
+                      {job.progress < 100 && (
+                        <Button size="sm" variant="outline" className="text-[10px] h-6 w-full" onClick={() => advanceProgress(job.id)}>
+                          Update Progress +10%
+                        </Button>
+                      )}
                     </div>
                   ))}
                   {jobs.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No jobs</p>}
