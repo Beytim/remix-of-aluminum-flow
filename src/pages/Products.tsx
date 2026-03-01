@@ -5,39 +5,51 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Plus, Grid3X3, List, Package } from "lucide-react";
+import { Search, Plus, Grid3X3, List, Package, Trash2 } from "lucide-react";
 import { sampleProducts } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import { AddProductDialog } from "@/components/dialogs/AddProductDialog";
+import type { Product } from "@/data/sampleData";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Products() {
+  const [products, setProducts] = useLocalStorage<Product[]>(STORAGE_KEYS.PRODUCTS, sampleProducts);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { t, language } = useI18n();
+  const { toast } = useToast();
 
   const filtered = useMemo(() => {
-    return sampleProducts.filter(p => {
+    return products.filter(p => {
       const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.code.toLowerCase().includes(search.toLowerCase());
       const matchCat = catFilter === "all" || p.category === catFilter;
       return matchSearch && matchCat;
     });
-  }, [search, catFilter]);
+  }, [search, catFilter, products]);
 
-  const categories = [...new Set(sampleProducts.map(p => p.category))];
+  const categories = [...new Set(products.map(p => p.category))];
+
+  const handleDelete = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    toast({ title: "Deleted", description: "Product removed." });
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('products.title')}</h1>
-          <p className="text-sm text-muted-foreground">{sampleProducts.length} {t('nav.products').toLowerCase()}</p>
+          <p className="text-sm text-muted-foreground">{products.length} {t('nav.products').toLowerCase()}</p>
         </div>
         <div className="flex gap-2">
           <div className="flex border rounded-md">
             <Button variant={viewMode === 'table' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><List className="h-3.5 w-3.5" /></Button>
             <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid3X3 className="h-3.5 w-3.5" /></Button>
           </div>
-          <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1.5" />{t('products.add')}</Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />{t('products.add')}</Button>
         </div>
       </div>
 
@@ -64,7 +76,10 @@ export default function Products() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <Badge variant="secondary" className="text-[10px]">{p.category}</Badge>
-                  <Badge variant={p.status === 'Active' ? 'outline' : 'secondary'} className={`text-[10px] ${p.status === 'Active' ? 'text-success border-success/30' : ''}`}>{p.status}</Badge>
+                  <div className="flex items-center gap-1">
+                    <Badge variant={p.status === 'Active' ? 'outline' : 'secondary'} className={`text-[10px] ${p.status === 'Active' ? 'text-success border-success/30' : ''}`}>{p.status}</Badge>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                  </div>
                 </div>
                 <h3 className="text-sm font-semibold mt-2">{language === 'am' ? p.nameAm : p.name}</h3>
                 <p className="text-[10px] text-muted-foreground mt-1">{p.profile} · {p.glass}</p>
@@ -97,6 +112,7 @@ export default function Products() {
                   <TableHead className="text-xs text-right">{t('products.material_cost')}</TableHead>
                   <TableHead className="text-xs text-right">{t('products.selling_price')}</TableHead>
                   <TableHead className="text-xs">{t('common.status')}</TableHead>
+                  <TableHead className="text-xs"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -112,6 +128,9 @@ export default function Products() {
                     <TableCell>
                       <Badge variant={p.status === 'Active' ? 'outline' : 'secondary'} className={`text-[10px] ${p.status === 'Active' ? 'text-success border-success/30' : ''}`}>{p.status}</Badge>
                     </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -125,6 +144,8 @@ export default function Products() {
           </CardContent>
         </Card>
       )}
+
+      <AddProductDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={p => setProducts(prev => [...prev, p])} existingCount={products.length} />
     </div>
   );
 }

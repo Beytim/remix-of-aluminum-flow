@@ -15,26 +15,31 @@ import {
 } from "@/data/sampleData";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-
-const statCards = [
-  { titleKey: 'dash.active_projects', value: '7', change: '+2', icon: FolderKanban, trend: 'up' as const },
-  { titleKey: 'dash.in_production', value: '4', change: '3 work orders', icon: Factory, trend: 'up' as const },
-  { titleKey: 'dash.ready_install', value: '2', change: 'This week', icon: Wrench, trend: 'up' as const },
-  { titleKey: 'dash.monthly_revenue', value: 'ETB 890K', change: '+12%', icon: DollarSign, trend: 'up' as const },
-];
-
-const activityIcons: Record<string, string> = {
-  order: '🛒', stock: '📦', alert: '⚠️', quote: '📋', production: '🏭', install: '🔧',
-};
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import type { Project, InventoryItem, Installation } from "@/data/sampleData";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, language } = useI18n();
-  const lowStockItems = sampleInventory.filter(i => i.stock <= i.minStock);
+  const [projects] = useLocalStorage<Project[]>(STORAGE_KEYS.PROJECTS, sampleProjects);
+  const [inventory] = useLocalStorage<InventoryItem[]>(STORAGE_KEYS.INVENTORY, sampleInventory);
+  const [installations] = useLocalStorage<Installation[]>(STORAGE_KEYS.INSTALLATIONS, sampleInstallations);
+
+  const lowStockItems = inventory.filter(i => i.stock <= i.minStock);
+  const activeProjects = projects.filter(p => p.status !== 'Completed').length;
+  const inProduction = projects.filter(p => p.status === 'Production').length;
+  const readyInstall = projects.filter(p => p.status === 'Ready').length;
+
+  const statCards = [
+    { titleKey: 'dash.active_projects', value: String(activeProjects), change: `${projects.length} total`, icon: FolderKanban },
+    { titleKey: 'dash.in_production', value: String(inProduction), change: 'work orders', icon: Factory },
+    { titleKey: 'dash.ready_install', value: String(readyInstall), change: 'This week', icon: Wrench },
+    { titleKey: 'dash.monthly_revenue', value: `ETB ${(projects.reduce((s, p) => s + p.deposit, 0) / 1000).toFixed(0)}K`, change: '+12%', icon: DollarSign },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('nav.dashboard')}</h1>
           <p className="text-sm text-muted-foreground">{t('dash.welcome')}</p>
@@ -50,7 +55,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
           <Card key={stat.titleKey} className="shadow-card hover:shadow-card-hover transition-shadow overflow-hidden">
             <CardContent className="p-4 relative">
@@ -117,7 +122,6 @@ export default function Dashboard() {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Low Stock Alerts */}
         <Card className="shadow-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -142,7 +146,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
         <Card className="shadow-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('dash.recent_activity')}</CardTitle>
@@ -151,7 +154,9 @@ export default function Dashboard() {
             <div className="space-y-3 max-h-[240px] overflow-auto">
               {sampleActivities.map((activity) => (
                 <div key={activity.id} className="flex gap-2 text-sm">
-                  <span className="text-base shrink-0">{activityIcons[activity.type]}</span>
+                  <span className="text-base shrink-0">
+                    {activity.type === 'order' ? '🛒' : activity.type === 'stock' ? '📦' : activity.type === 'alert' ? '⚠️' : activity.type === 'quote' ? '📋' : activity.type === 'production' ? '🏭' : '🔧'}
+                  </span>
                   <div className="min-w-0">
                     <p className="text-xs text-card-foreground leading-snug">
                       {language === 'am' ? activity.messageAm : activity.message}
@@ -164,14 +169,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Today's Installations */}
         <Card className="shadow-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('dash.today_installs')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-[240px] overflow-auto">
-              {sampleInstallations.map((inst) => (
+              {installations.map((inst) => (
                 <div key={inst.id} className="p-2 border rounded-lg">
                   <div className="flex justify-between items-start">
                     <div>
