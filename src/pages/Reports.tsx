@@ -5,8 +5,11 @@ import { Download, FileText, BarChart3, DollarSign, Package, Factory, Wrench, Us
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { topProductsData } from "@/data/sampleData";
+import { topProductsData, sampleProducts, sampleCustomers, sampleOrders } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
+import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
+import { generateReportPDF } from "@/lib/pdfExport";
+import type { Product, Customer, Order } from "@/data/sampleData";
 
 const reportCards = [
   { title: "Project Status Report", icon: FileText, desc: "Active projects and their current stages" },
@@ -21,17 +24,52 @@ const reportCards = [
 
 export default function Reports() {
   const { t } = useI18n();
+  const [products] = useLocalStorage<Product[]>(STORAGE_KEYS.PRODUCTS, sampleProducts);
+  const [customers] = useLocalStorage<Customer[]>(STORAGE_KEYS.CUSTOMERS, sampleCustomers);
+  const [orders] = useLocalStorage<Order[]>(STORAGE_KEYS.ORDERS, sampleOrders);
+
+  const handleReportClick = (title: string) => {
+    switch (title) {
+      case "Inventory Valuation":
+        generateReportPDF("Inventory Valuation Report",
+          ['Code', 'Name', 'Category', 'Cost', 'Selling Price', 'Stock', 'Total Value'],
+          products.map(p => [p.code, p.name, p.category, `ETB ${p.materialCost.toLocaleString()}`, `ETB ${p.sellingPrice.toLocaleString()}`, String(p.currentStock || 0), `ETB ${((p.currentStock || 0) * p.materialCost).toLocaleString()}`])
+        );
+        break;
+      case "Aging Report":
+        generateReportPDF("Accounts Receivable Aging Report",
+          ['Customer', 'Total Value', 'Outstanding', 'Projects'],
+          customers.filter(c => c.outstanding > 0).map(c => [c.name, `ETB ${c.totalValue.toLocaleString()}`, `ETB ${c.outstanding.toLocaleString()}`, String(c.projects)])
+        );
+        break;
+      default:
+        generateReportPDF(title, ['Report'], [['Detailed report data will be populated from live data']]);
+    }
+  };
+
+  const handleExportAll = () => {
+    generateReportPDF("Business Summary Report",
+      ['Metric', 'Value'],
+      [
+        ['Total Products', String(products.length)],
+        ['Total Customers', String(customers.length)],
+        ['Total Orders', String(orders.length)],
+        ['Total Revenue', `ETB ${orders.reduce((s, o) => s + o.paid, 0).toLocaleString()}`],
+        ['Outstanding Balance', `ETB ${orders.reduce((s, o) => s + o.balance, 0).toLocaleString()}`],
+      ]
+    );
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('nav.reports')}</h1>
-          <p className="text-sm text-muted-foreground">Comprehensive business insights</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('nav.reports')}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Comprehensive business insights</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Select defaultValue="month">
-            <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-28 sm:w-36 h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="week">This Week</SelectItem>
               <SelectItem value="month">This Month</SelectItem>
@@ -39,13 +77,13 @@ export default function Reports() {
               <SelectItem value="year">This Year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1.5" />{t('common.export')} PDF</Button>
+          <Button variant="outline" size="sm" onClick={handleExportAll}><Download className="h-3.5 w-3.5 mr-1.5" />{t('common.export')} PDF</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {reportCards.map((r) => (
-          <Card key={r.title} className="shadow-card hover:shadow-card-hover transition-shadow cursor-pointer">
+          <Card key={r.title} className="shadow-card hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => handleReportClick(r.title)}>
             <CardContent className="p-4">
               <r.icon className="h-8 w-8 text-primary mb-3" />
               <h3 className="text-sm font-semibold">{r.title}</h3>

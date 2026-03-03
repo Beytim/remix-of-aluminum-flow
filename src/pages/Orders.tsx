@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { Search, Plus, Trash2, ChevronRight, ShoppingCart, Clock, CheckCircle, Truck } from "lucide-react";
+import { Search, Plus, Trash2, ChevronRight, ShoppingCart, Clock, CheckCircle, Truck, Pencil, FileText, Download } from "lucide-react";
 import { sampleOrders, sampleCustomers } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
 import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
 import { useToast } from "@/hooks/use-toast";
+import { EditOrderDialog } from "@/components/dialogs/EditOrderDialog";
+import { generateOrderInvoicePDF, generateReportPDF } from "@/lib/pdfExport";
 import type { Order, Customer } from "@/data/sampleData";
 
 const statusFlow: Order['status'][] = ['Draft', 'Quote Accepted', 'Payment Received', 'Processing', 'Ready', 'Shipped', 'Delivered', 'Completed'];
@@ -41,6 +42,7 @@ export default function Orders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
   const { t } = useI18n();
   const { toast } = useToast();
 
@@ -89,17 +91,26 @@ export default function Orders() {
     setDialogOpen(false);
   };
 
+  const handleExportAll = () => {
+    generateReportPDF("Orders Report",
+      ['Order #', 'Customer', 'Date', 'Total', 'Paid', 'Balance', 'Status'],
+      filtered.map(o => [o.id, o.customerName, o.orderDate, `ETB ${o.total.toLocaleString()}`, `ETB ${o.paid.toLocaleString()}`, `ETB ${o.balance.toLocaleString()}`, o.status])
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Order Management</h1>
-          <p className="text-sm text-muted-foreground">{orders.length} orders · Revenue: ETB {totalRevenue.toLocaleString()} · Pending: ETB {totalPending.toLocaleString()}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Order Management</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">{orders.length} orders · Revenue: ETB {totalRevenue.toLocaleString()}</p>
         </div>
-        <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />New Order</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportAll}><Download className="h-3.5 w-3.5 mr-1.5" />PDF</Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />New Order</Button>
+        </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Draft', icon: ShoppingCart, count: orders.filter(o => o.status === 'Draft').length },
@@ -116,15 +127,14 @@ export default function Orders() {
         ))}
       </div>
 
-      {/* Filters */}
       <Card className="shadow-card">
         <CardContent className="p-3 flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-[180px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search orders..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40 h-9"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-32 sm:w-40 h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               {statusFlow.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -134,7 +144,6 @@ export default function Orders() {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
       <Card className="shadow-card">
         <CardContent className="p-0 overflow-x-auto">
           <Table>
@@ -142,40 +151,39 @@ export default function Orders() {
               <TableRow>
                 <TableHead className="text-xs">Order #</TableHead>
                 <TableHead className="text-xs">Customer</TableHead>
-                <TableHead className="text-xs">Date</TableHead>
-                <TableHead className="text-xs">Delivery</TableHead>
-                <TableHead className="text-xs text-center">Items</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Date</TableHead>
                 <TableHead className="text-xs text-right">Total</TableHead>
-                <TableHead className="text-xs text-right">Balance</TableHead>
-                <TableHead className="text-xs">Payment</TableHead>
+                <TableHead className="text-xs text-right hidden sm:table-cell">Balance</TableHead>
+                <TableHead className="text-xs hidden sm:table-cell">Payment</TableHead>
                 <TableHead className="text-xs">{t('common.status')}</TableHead>
-                <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
+                <TableHead className="text-xs text-right w-28">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map(o => (
-                <TableRow key={o.id}>
+                <TableRow key={o.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setEditOrder(o)}>
                   <TableCell className="text-xs font-mono font-medium">{o.id}</TableCell>
                   <TableCell className="text-xs">{o.customerName}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{o.orderDate}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{o.requestedDelivery}</TableCell>
-                  <TableCell className="text-xs text-center">{o.items.length}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{o.orderDate}</TableCell>
                   <TableCell className="text-xs text-right font-semibold">ETB {o.total.toLocaleString()}</TableCell>
-                  <TableCell className="text-xs text-right">
+                  <TableCell className="text-xs text-right hidden sm:table-cell">
                     <span className={o.balance > 0 ? 'text-warning font-medium' : 'text-success'}>
                       {o.balance > 0 ? `ETB ${o.balance.toLocaleString()}` : '—'}
                     </span>
                   </TableCell>
-                  <TableCell><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${paymentColor[o.paymentStatus]}`}>{o.paymentStatus}</span></TableCell>
+                  <TableCell className="hidden sm:table-cell"><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${paymentColor[o.paymentStatus]}`}>{o.paymentStatus}</span></TableCell>
                   <TableCell><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColor[o.status]}`}>{o.status}</span></TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-1 justify-end">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" title="Invoice PDF" onClick={e => { e.stopPropagation(); generateOrderInvoicePDF(o); }}>
+                        <FileText className="h-3 w-3" />
+                      </Button>
                       {o.status !== 'Completed' && o.status !== 'Cancelled' && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Advance" onClick={() => advanceStatus(o.id)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Advance" onClick={e => { e.stopPropagation(); advanceStatus(o.id); }}>
                           <ChevronRight className="h-3 w-3" />
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setOrders(prev => prev.filter(x => x.id !== o.id)); toast({ title: "Deleted" }); }}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); setOrders(prev => prev.filter(x => x.id !== o.id)); toast({ title: "Deleted" }); }}>
                         <Trash2 className="h-3 w-3 text-destructive" />
                       </Button>
                     </div>
@@ -227,6 +235,8 @@ export default function Orders() {
           <DialogFooter className="mt-4"><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={handleAdd}>Create Order</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <EditOrderDialog open={!!editOrder} onOpenChange={open => { if (!open) setEditOrder(null); }} order={editOrder} customers={customers} onSave={updated => setOrders(prev => prev.map(o => o.id === updated.id ? updated : o))} />
     </div>
   );
 }
