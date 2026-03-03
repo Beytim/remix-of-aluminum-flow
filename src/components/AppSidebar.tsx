@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Package, Boxes, Factory, Scissors, FolderKanban,
   Users, FileText, Wrench, ShieldCheck, ClipboardCheck, Truck,
   DollarSign, UserCog, BarChart3, Settings, Globe, Moon, Sun,
-  Search, Building2,
+  Search, Building2, ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -23,6 +23,7 @@ const modules = [
   { title: 'nav.cutting', url: '/cutting', icon: Scissors },
   { title: 'nav.projects', url: '/projects', icon: FolderKanban },
   { title: 'nav.customers', url: '/customers', icon: Users },
+  { title: 'Orders', url: '/orders', icon: ShoppingCart },
   { title: 'nav.quotes', url: '/quotes', icon: FileText },
   { title: 'nav.installation', url: '/installation', icon: Wrench },
   { title: 'nav.maintenance', url: '/maintenance', icon: ShieldCheck },

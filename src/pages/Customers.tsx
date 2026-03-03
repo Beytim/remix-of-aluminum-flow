@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Plus, Building2, Trash2 } from "lucide-react";
+import { Search, Plus, Building2, Trash2, Pencil, Download } from "lucide-react";
 import { sampleCustomers } from "@/data/sampleData";
 import { useI18n } from "@/lib/i18n";
 import { useLocalStorage, STORAGE_KEYS } from "@/lib/localStorage";
 import { AddCustomerDialog } from "@/components/dialogs/AddCustomerDialog";
+import { EditCustomerDialog } from "@/components/dialogs/EditCustomerDialog";
+import { generateReportPDF } from "@/lib/pdfExport";
 import type { Customer } from "@/data/sampleData";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +18,7 @@ export default function Customers() {
   const [customers, setCustomers] = useLocalStorage<Customer[]>(STORAGE_KEYS.CUSTOMERS, sampleCustomers);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const { t, language } = useI18n();
   const { toast } = useToast();
 
@@ -28,14 +31,24 @@ export default function Customers() {
     toast({ title: "Deleted", description: "Customer removed." });
   };
 
+  const handleExportPDF = () => {
+    generateReportPDF("Customer List",
+      ['Name', 'Contact', 'Type', 'Phone', 'Projects', 'Total Value', 'Outstanding'],
+      filtered.map(c => [c.name, c.contact, c.type, c.phone, String(c.projects), `ETB ${c.totalValue.toLocaleString()}`, `ETB ${c.outstanding.toLocaleString()}`])
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('nav.customers')}</h1>
-          <p className="text-sm text-muted-foreground">{customers.length} {t('nav.customers').toLowerCase()}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('nav.customers')}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">{customers.length} {t('nav.customers').toLowerCase()}</p>
         </div>
-        <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />{t('common.add')}</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportPDF}><Download className="h-3.5 w-3.5 mr-1.5" />PDF</Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />{t('common.add')}</Button>
+        </div>
       </div>
 
       <Card className="shadow-card">
@@ -53,18 +66,18 @@ export default function Customers() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-xs">{t('common.name')}</TableHead>
-                <TableHead className="text-xs">Contact</TableHead>
-                <TableHead className="text-xs">Type</TableHead>
-                <TableHead className="text-xs">Phone</TableHead>
-                <TableHead className="text-xs text-right">Projects</TableHead>
+                <TableHead className="text-xs hidden sm:table-cell">Contact</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Type</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Phone</TableHead>
+                <TableHead className="text-xs text-right hidden sm:table-cell">Projects</TableHead>
                 <TableHead className="text-xs text-right">{t('common.total')} Value</TableHead>
-                <TableHead className="text-xs text-right">Outstanding</TableHead>
-                <TableHead className="text-xs"></TableHead>
+                <TableHead className="text-xs text-right hidden md:table-cell">Outstanding</TableHead>
+                <TableHead className="text-xs w-20">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((c) => (
-                <TableRow key={c.id}>
+                <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setEditCustomer(c)}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
@@ -76,18 +89,21 @@ export default function Customers() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs">{c.contact}</TableCell>
-                  <TableCell><Badge variant="secondary" className="text-[10px]">{c.type}</Badge></TableCell>
-                  <TableCell className="text-xs">{c.phone}</TableCell>
-                  <TableCell className="text-xs text-right">{c.projects}</TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell">{c.contact}</TableCell>
+                  <TableCell className="hidden md:table-cell"><Badge variant="secondary" className="text-[10px]">{c.type}</Badge></TableCell>
+                  <TableCell className="text-xs hidden lg:table-cell">{c.phone}</TableCell>
+                  <TableCell className="text-xs text-right hidden sm:table-cell">{c.projects}</TableCell>
                   <TableCell className="text-xs text-right font-medium">ETB {c.totalValue.toLocaleString()}</TableCell>
-                  <TableCell className="text-xs text-right">
+                  <TableCell className="text-xs text-right hidden md:table-cell">
                     <span className={c.outstanding > 0 ? "text-warning font-medium" : "text-success"}>
                       ETB {c.outstanding.toLocaleString()}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(c.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); setEditCustomer(c); }}><Pencil className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); handleDelete(c.id); }}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -97,6 +113,7 @@ export default function Customers() {
       </Card>
 
       <AddCustomerDialog open={dialogOpen} onOpenChange={setDialogOpen} onAdd={c => setCustomers(prev => [...prev, c])} existingCount={customers.length} />
+      <EditCustomerDialog open={!!editCustomer} onOpenChange={open => { if (!open) setEditCustomer(null); }} customer={editCustomer} onSave={updated => setCustomers(prev => prev.map(c => c.id === updated.id ? updated : c))} />
     </div>
   );
 }
