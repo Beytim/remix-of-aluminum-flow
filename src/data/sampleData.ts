@@ -5,6 +5,16 @@
 
 // ═══ TYPES ═══
 
+export interface BOMComponent {
+  id: string;
+  type: 'Profile' | 'Hardware' | 'Glass' | 'Accessory' | 'Other';
+  name: string;
+  quantity: number;
+  unit: string;
+  unitCost: number;
+  total: number;
+}
+
 export interface Product {
   id: string;
   code: string;
@@ -12,6 +22,7 @@ export interface Product {
   nameAm: string;
   category: 'Windows' | 'Doors' | 'Curtain Walls' | 'Handrails' | 'Louvers' | 'Partitions' | 'Sheet' | 'Plate' | 'Bar/Rod' | 'Tube/Pipe' | 'Angle' | 'Channel' | 'Beam' | 'Profile' | 'Coil' | 'Custom';
   subcategory: string;
+  productType: 'Raw Material' | 'Fabricated' | 'System' | 'Custom';
   profile: string;
   glass: string;
   colors: string[];
@@ -40,6 +51,19 @@ export interface Product {
   millCertificate?: boolean;
   dateReceived?: string;
   notes?: string;
+  unit?: string;
+  version?: string;
+  effectiveDate?: string;
+  bom?: BOMComponent[];
+  profileCost?: number;
+  glassCost?: number;
+  hardwareCost?: number;
+  accessoriesCost?: number;
+  fabLaborCost?: number;
+  installLaborCost?: number;
+  overheadPercent?: number;
+  leadTimeDays?: number;
+  moq?: number;
 }
 
 export interface Project {
@@ -337,18 +361,23 @@ export interface StockAdjustment {
 
 // ═══ SAMPLE PRODUCTS ═══
 export const sampleProducts: Product[] = [
-  { id: 'PRD-001', code: 'SW-6063-S1', name: 'Sliding Window 2-Panel', nameAm: 'ተንሸራታች መስኮት 2-ፓነል', category: 'Windows', subcategory: 'Sliding', profile: '6063-T5', glass: '6mm Clear Tempered', colors: ['White', 'Bronze', 'Black'], laborHrs: 3.5, materialCost: 4500, sellingPrice: 7200, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 45, minStock: 10, maxStock: 100, warehouseLocation: 'A-1-1', purchasePrice: 4200, markupPercent: 60 },
-  { id: 'PRD-002', code: 'CW-6063-S2', name: 'Casement Window Single', nameAm: 'ካዝመንት መስኮት ነጠላ', category: 'Windows', subcategory: 'Casement', profile: '6063-T5', glass: '5mm Clear Float', colors: ['White', 'Silver'], laborHrs: 2.5, materialCost: 3200, sellingPrice: 5100, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 32, minStock: 8, maxStock: 80, warehouseLocation: 'A-1-2', purchasePrice: 3000, markupPercent: 59 },
-  { id: 'PRD-003', code: 'FW-6063-S3', name: 'Fixed Window Large', nameAm: 'ቋሚ መስኮት ትልቅ', category: 'Windows', subcategory: 'Fixed', profile: '6063-T5', glass: '8mm Tinted Tempered', colors: ['White', 'Bronze', 'Grey'], laborHrs: 2.0, materialCost: 3800, sellingPrice: 6000, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 28, minStock: 5, maxStock: 60, warehouseLocation: 'A-2-1', purchasePrice: 3500, markupPercent: 58 },
-  { id: 'PRD-004', code: 'SD-6063-D1', name: 'Sliding Door 3-Panel', nameAm: 'ተንሸራታች በር 3-ፓነል', category: 'Doors', subcategory: 'Sliding', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['White', 'Black', 'Bronze'], laborHrs: 6.0, materialCost: 12000, sellingPrice: 19500, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 15, minStock: 3, maxStock: 40, warehouseLocation: 'B-1-1', purchasePrice: 11000, markupPercent: 63 },
-  { id: 'PRD-005', code: 'HD-6063-D2', name: 'Hinged Door Double', nameAm: 'የሚከፈት በር ድርብ', category: 'Doors', subcategory: 'Hinged', profile: '6063-T6', glass: '8mm Frosted Tempered', colors: ['White', 'Bronze'], laborHrs: 5.0, materialCost: 9500, sellingPrice: 15200, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 12, minStock: 3, maxStock: 30, warehouseLocation: 'B-1-2', purchasePrice: 8800, markupPercent: 60 },
-  { id: 'PRD-006', code: 'FD-6063-D3', name: 'Folding Door 4-Panel', nameAm: 'ተጣጣፊ በር 4-ፓነል', category: 'Doors', subcategory: 'Folding', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['Black', 'Grey'], laborHrs: 8.0, materialCost: 18000, sellingPrice: 29000, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 8, minStock: 2, maxStock: 20, warehouseLocation: 'B-2-1', purchasePrice: 16500, markupPercent: 61 },
-  { id: 'PRD-007', code: 'CW-6060-C1', name: 'Curtain Wall System', nameAm: 'ከርተን ወል ሲስተም', category: 'Curtain Walls', subcategory: 'Stick System', profile: '6060-T5', glass: '12mm DGU', colors: ['Silver'], laborHrs: 12.0, materialCost: 35000, sellingPrice: 55000, status: 'Active', alloyType: '6060', temper: 'T5', form: 'Profile', currentStock: 5, minStock: 2, maxStock: 15, warehouseLocation: 'C-1-1', purchasePrice: 32000, markupPercent: 57 },
-  { id: 'PRD-008', code: 'HR-6063-H1', name: 'Glass Handrail System', nameAm: 'የመስታወት ዘንግ ስርዓት', category: 'Handrails', subcategory: 'Glass', profile: '6063-T6', glass: '12mm Clear Tempered', colors: ['Silver', 'Black'], laborHrs: 4.0, materialCost: 8500, sellingPrice: 13500, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 18, minStock: 5, maxStock: 40, warehouseLocation: 'C-2-1', purchasePrice: 7800, markupPercent: 59 },
-  { id: 'PRD-009', code: 'LV-6063-L1', name: 'Aluminum Louver Window', nameAm: 'አልሚኒየም ላውቨር መስኮት', category: 'Louvers', subcategory: 'Adjustable', profile: '6063-T5', glass: '5mm Frosted', colors: ['White', 'Silver'], laborHrs: 3.0, materialCost: 3500, sellingPrice: 5600, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 22, minStock: 5, maxStock: 50, warehouseLocation: 'A-3-1', purchasePrice: 3200, markupPercent: 60 },
-  { id: 'PRD-010', code: 'PT-6063-P1', name: 'Office Partition System', nameAm: 'የቢሮ ክፋፍል ስርዓት', category: 'Partitions', subcategory: 'Full Height', profile: '6063-T5', glass: '10mm Clear Tempered', colors: ['Silver', 'White'], laborHrs: 5.0, materialCost: 7200, sellingPrice: 11500, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 10, minStock: 3, maxStock: 25, warehouseLocation: 'D-1-1', purchasePrice: 6600, markupPercent: 60 },
-  { id: 'PRD-011', code: 'SH-6061-01', name: '6061 Aluminum Sheet 4x8', nameAm: '6061 አልሚኒየም ሉህ 4x8', category: 'Sheet', subcategory: 'Standard', profile: '6061-T6', glass: '', colors: [], laborHrs: 0, materialCost: 2800, sellingPrice: 4200, status: 'Active', alloyType: '6061', temper: 'T6', form: 'Sheet', length: 2440, width: 1220, thickness: 3, currentStock: 50, minStock: 15, maxStock: 100, warehouseLocation: 'E-1-1', purchasePrice: 2500, markupPercent: 50 },
-  { id: 'PRD-012', code: 'TB-6063-01', name: '6063 Round Tube 50mm', nameAm: '6063 ክብ ቱቦ 50ሚሜ', category: 'Tube/Pipe', subcategory: 'Round', profile: '6063-T5', glass: '', colors: [], laborHrs: 0, materialCost: 850, sellingPrice: 1350, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Tube/Pipe', diameter: 50, wallThickness: 2, weightPerMeter: 0.82, currentStock: 200, minStock: 50, maxStock: 500, warehouseLocation: 'E-2-1', purchasePrice: 750, markupPercent: 59 },
+  { id: 'PRD-001', code: 'SW-6063-S1', name: 'Sliding Window 2-Panel', nameAm: 'ተንሸራታች መስኮት 2-ፓነል', category: 'Windows', subcategory: 'Sliding', productType: 'Fabricated', profile: '6063-T5', glass: '6mm Clear Tempered', colors: ['White', 'Bronze', 'Black'], laborHrs: 3.5, materialCost: 4500, sellingPrice: 7200, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 45, minStock: 10, maxStock: 100, warehouseLocation: 'A-1-1', purchasePrice: 4200, markupPercent: 60, width: 1200, length: 1500, profileCost: 2500, glassCost: 1200, hardwareCost: 850, accessoriesCost: 420, fabLaborCost: 800, installLaborCost: 600, overheadPercent: 20, version: '1.0', effectiveDate: '2024-03-15', bom: [
+    { id: 'BOM-001', type: 'Profile', name: 'Frame 40x40', quantity: 6.2, unit: 'm', unitCost: 80, total: 496 },
+    { id: 'BOM-002', type: 'Hardware', name: 'Handle Set', quantity: 2, unit: 'set', unitCost: 225, total: 450 },
+    { id: 'BOM-003', type: 'Glass', name: '6mm Clear Tempered', quantity: 1.8, unit: 'm²', unitCost: 450, total: 810 },
+    { id: 'BOM-004', type: 'Accessory', name: 'EPDM Gasket', quantity: 12, unit: 'm', unitCost: 10, total: 120 },
+  ] },
+  { id: 'PRD-002', code: 'CW-6063-S2', name: 'Casement Window Single', nameAm: 'ካዝመንት መስኮት ነጠላ', category: 'Windows', subcategory: 'Casement', productType: 'Fabricated', profile: '6063-T5', glass: '5mm Clear Float', colors: ['White', 'Silver'], laborHrs: 2.5, materialCost: 3200, sellingPrice: 5100, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 32, minStock: 8, maxStock: 80, warehouseLocation: 'A-1-2', purchasePrice: 3000, markupPercent: 59, profileCost: 1800, glassCost: 800, hardwareCost: 600, fabLaborCost: 500, overheadPercent: 18 },
+  { id: 'PRD-003', code: 'FW-6063-S3', name: 'Fixed Window Large', nameAm: 'ቋሚ መስኮት ትልቅ', category: 'Windows', subcategory: 'Fixed', productType: 'Fabricated', profile: '6063-T5', glass: '8mm Tinted Tempered', colors: ['White', 'Bronze', 'Grey'], laborHrs: 2.0, materialCost: 3800, sellingPrice: 6000, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 28, minStock: 5, maxStock: 60, warehouseLocation: 'A-2-1', purchasePrice: 3500, markupPercent: 58, profileCost: 2000, glassCost: 1200, hardwareCost: 200, fabLaborCost: 400, overheadPercent: 15 },
+  { id: 'PRD-004', code: 'SD-6063-D1', name: 'Sliding Door 3-Panel', nameAm: 'ተንሸራታች በር 3-ፓነል', category: 'Doors', subcategory: 'Sliding', productType: 'Fabricated', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['White', 'Black', 'Bronze'], laborHrs: 6.0, materialCost: 12000, sellingPrice: 19500, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 15, minStock: 3, maxStock: 40, warehouseLocation: 'B-1-1', purchasePrice: 11000, markupPercent: 63, profileCost: 5500, glassCost: 3200, hardwareCost: 2000, accessoriesCost: 800, fabLaborCost: 1200, installLaborCost: 800, overheadPercent: 20 },
+  { id: 'PRD-005', code: 'HD-6063-D2', name: 'Hinged Door Double', nameAm: 'የሚከፈት በር ድርብ', category: 'Doors', subcategory: 'Hinged', productType: 'Fabricated', profile: '6063-T6', glass: '8mm Frosted Tempered', colors: ['White', 'Bronze'], laborHrs: 5.0, materialCost: 9500, sellingPrice: 15200, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 12, minStock: 3, maxStock: 30, warehouseLocation: 'B-1-2', purchasePrice: 8800, markupPercent: 60, profileCost: 4500, glassCost: 2500, hardwareCost: 1500, fabLaborCost: 1000, overheadPercent: 18 },
+  { id: 'PRD-006', code: 'FD-6063-D3', name: 'Folding Door 4-Panel', nameAm: 'ተጣጣፊ በር 4-ፓነል', category: 'Doors', subcategory: 'Folding', productType: 'Fabricated', profile: '6063-T6', glass: '10mm Clear Tempered', colors: ['Black', 'Grey'], laborHrs: 8.0, materialCost: 18000, sellingPrice: 29000, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 8, minStock: 2, maxStock: 20, warehouseLocation: 'B-2-1', purchasePrice: 16500, markupPercent: 61, profileCost: 8000, glassCost: 5000, hardwareCost: 3000, accessoriesCost: 1200, fabLaborCost: 1500, installLaborCost: 1000, overheadPercent: 22 },
+  { id: 'PRD-007', code: 'CW-6060-C1', name: 'Curtain Wall System', nameAm: 'ከርተን ወል ሲስተም', category: 'Curtain Walls', subcategory: 'Stick System', productType: 'System', profile: '6060-T5', glass: '12mm DGU', colors: ['Silver'], laborHrs: 12.0, materialCost: 35000, sellingPrice: 55000, status: 'Active', alloyType: '6060', temper: 'T5', form: 'Profile', currentStock: 5, minStock: 2, maxStock: 15, warehouseLocation: 'C-1-1', purchasePrice: 32000, markupPercent: 57, profileCost: 15000, glassCost: 12000, hardwareCost: 5000, accessoriesCost: 2000, fabLaborCost: 3000, installLaborCost: 2000, overheadPercent: 25 },
+  { id: 'PRD-008', code: 'HR-6063-H1', name: 'Glass Handrail System', nameAm: 'የመስታወት ዘንግ ስርዓት', category: 'Handrails', subcategory: 'Glass', productType: 'Fabricated', profile: '6063-T6', glass: '12mm Clear Tempered', colors: ['Silver', 'Black'], laborHrs: 4.0, materialCost: 8500, sellingPrice: 13500, status: 'Active', alloyType: '6063', temper: 'T6', form: 'Profile', currentStock: 18, minStock: 5, maxStock: 40, warehouseLocation: 'C-2-1', purchasePrice: 7800, markupPercent: 59, profileCost: 3500, glassCost: 3000, hardwareCost: 1500, fabLaborCost: 800, overheadPercent: 15 },
+  { id: 'PRD-009', code: 'LV-6063-L1', name: 'Aluminum Louver Window', nameAm: 'አልሚኒየም ላውቨር መስኮት', category: 'Louvers', subcategory: 'Adjustable', productType: 'Fabricated', profile: '6063-T5', glass: '5mm Frosted', colors: ['White', 'Silver'], laborHrs: 3.0, materialCost: 3500, sellingPrice: 5600, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 22, minStock: 5, maxStock: 50, warehouseLocation: 'A-3-1', purchasePrice: 3200, markupPercent: 60, profileCost: 1800, glassCost: 800, hardwareCost: 500, fabLaborCost: 600, overheadPercent: 15 },
+  { id: 'PRD-010', code: 'PT-6063-P1', name: 'Office Partition System', nameAm: 'የቢሮ ክፋፍል ስርዓት', category: 'Partitions', subcategory: 'Full Height', productType: 'Custom', profile: '6063-T5', glass: '10mm Clear Tempered', colors: ['Silver', 'White'], laborHrs: 5.0, materialCost: 7200, sellingPrice: 11500, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Profile', currentStock: 10, minStock: 3, maxStock: 25, warehouseLocation: 'D-1-1', purchasePrice: 6600, markupPercent: 60, profileCost: 3500, glassCost: 2200, hardwareCost: 800, fabLaborCost: 700, overheadPercent: 18 },
+  { id: 'PRD-011', code: 'SH-6061-01', name: '6061 Aluminum Sheet 4x8', nameAm: '6061 አልሚኒየም ሉህ 4x8', category: 'Sheet', subcategory: 'Standard', productType: 'Raw Material', profile: '6061-T6', glass: '', colors: [], laborHrs: 0, materialCost: 2800, sellingPrice: 4200, status: 'Active', alloyType: '6061', temper: 'T6', form: 'Sheet', length: 2440, width: 1220, thickness: 3, currentStock: 50, minStock: 15, maxStock: 100, warehouseLocation: 'E-1-1', purchasePrice: 2500, markupPercent: 50 },
+  { id: 'PRD-012', code: 'TB-6063-01', name: '6063 Round Tube 50mm', nameAm: '6063 ክብ ቱቦ 50ሚሜ', category: 'Tube/Pipe', subcategory: 'Round', productType: 'Raw Material', profile: '6063-T5', glass: '', colors: [], laborHrs: 0, materialCost: 850, sellingPrice: 1350, status: 'Active', alloyType: '6063', temper: 'T5', form: 'Tube/Pipe', diameter: 50, wallThickness: 2, weightPerMeter: 0.82, currentStock: 200, minStock: 50, maxStock: 500, warehouseLocation: 'E-2-1', purchasePrice: 750, markupPercent: 59 },
 ];
 
 // ═══ SAMPLE PROJECTS ═══
